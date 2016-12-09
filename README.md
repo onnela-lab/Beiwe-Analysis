@@ -1,5 +1,5 @@
 # Introduction
-`Beiwe-Analysis` is our GitHub code repository for analyzing Beiwe and collaborator data.  Some of this code references **`Python`** or **`C`**-related code for speed, but most of this code is in **`R`**, and is readily converted into an **`R`** package.
+`Beiwe-Analysis` is our GitHub code repository for analyzing Beiwe and collaborator data.  The idea is to help make study analysis as systematic and error-free as the data itself.  Some of this code references **`Python`** or **`C`**-related code for speed, but most of this code is in **`R`**, and is readily converted into an **`R`** package.  In the near future, we will provide a notebook example showing how to use these functions.
 
 This is largely an effort of Ian and Patrick, but we intend to include any other efforts as well.  These efforts are closely related to Matt's `beiwedata`, and we plan to merge our efforts in the future.
 
@@ -18,12 +18,13 @@ We say data is ***preprocessed*** if it takes the form of a two-dimensional arra
 * **`Datetime`**, a string containing a universal format for date and time.  For now, it's a **`POSIXct`** object, but this may change.
 * **`Person`**, a string containing an ID for the subject at hand.
 
-The goal of preprocessing with raw Beiwe data or collaborator is to convert it to processed data.
+The goal of preprocessing with raw Beiwe data or collaborator is to convert it to processed data.  For now, all preprocessed data is small enough to be loaded into working memory.
 
 ## Processing
-Processing 
-## Outputs
+Even after preprocessing, most analyses require basic steps before creating plots or performing statistical analysis.  For example, plotting may require preprocessed data using several different datasteams, or statistical analysis may require comparing one time with a fixed time lag in the past.  To avoid errors in these tasks, we list how we do them here.  Data is called **`processed`** if it is preprocessed, and is the product of the functions specified here.  The goal is to do as much processing as possible using only these functions.
 
+## Outputs
+Once the data is processed, we arrive at the juicy part: plots and statistical analysis.  These functions take processed data in a specified format as inputs, and highly specific and salient plots as outputs.  These functions should not contain any processing steps.
 
 
 
