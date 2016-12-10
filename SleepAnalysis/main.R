@@ -8,217 +8,165 @@ library(tibble)
 sleep_col = rgb(.2,.2,.8)
 wake_col = rgb(.8,.2,.2)
 
-filename = "C:/Users/Patrick/Desktop/schizophrenia_patients"
-code_location = "C:/Users/Patrick/Desktop/read_accelerometer.py"
+
+#patient_estimates = list()
+
+filename = "C:/Users/Patrick/Desktop/2016.10.20_justin_data"
+code_location = "C:/Users/Patrick/Desktop/read_objective_fixed_time.py"
+TT=24
+minutes = 5
+minutes = 60
 setwd(filename)
-samples_per_hour = 12
+samples_per_hour = 1# not exact right now.  It only filters by number of samples!  For Justin's data, 12 is about 2.25 minute samples.  Go for 15 minutes.
+FORWARD_SHIFT = 8
 
-patient_names = c("ws535wyt","x64sum6q","v5k3vk1b","upgskgun","euvxbf3w","dske5c2t") #just restricted to patients with full data for now
-#patient_names = "v5k3vk1b"#"upgskgun"#"euvxbf3w"#"x64sum6q"#
+#patient_names = list.files(filename)
+patient_names = c("8i7a1n", "928h5mwo", "949iuit", "dp3wd7ut","jr7j7cmd", "kemjxj75", "waj24hoj", "wp6wfx3n")#c()#, 
 for(patient in patient_names){#list.files()
-  print(patient)
-  acc_file = paste(filename,patient,"accelerometer",sep="/")
-  if(file.exists(acc_file)){
-    sheared_file = paste(acc_file, "appended_sheared_file.txt",sep="/")
-    if(!file.exists(sheared_file)){
-      print(paste("working on ", patient))
-      system(paste("python", code_location, acc_file, sep=" "))
+  for(minutes in c(5, 60)){
+    print(patient)
+    appended_acc_file = paste(filename,"/",patient,"/","appended_sheared_file_acc_",minutes,".txt",sep="")
+    appended_pow_file = paste(filename,"/",patient,"/","appended_sheared_file_pow_",minutes,".txt",sep="")
+    if(!file.exists(appended_acc_file)){
+        print(paste("working on ", patient))
+        system(paste("python", code_location, filename, patient, minutes, sep=" "))
+      }
     }
-  }
 
-
-setwd(paste(filename,patient,sep="/"))
-accmat = read.csv(sheared_file,header=T)
-accmat[,1] = accmat[,1] / 1000
-
-movement = function(vec) sqrt(sum(vec**2))
-accmat[,"Movement"] = apply(accmat[,c("x","y","z")],1,movement)
-
-# SHIFT_FORWARD
-forward_shift      <- as.POSIXlt(accmat[,"timestamp"],origin="1970-01-01")
-forward_shift$hour <- forward_shift$hour + 12
-accmat[,"timestamp"]         <- as.numeric(forward_shift)
-# END SHIFT FORWARD
-
-accmat[,c("Days", "Hours","Mins","Secs")] = accmat[,1] %>%
-  as.POSIXct(origin="1970-01-01") %>%
-  as.character %>%
-  strsplit(" |:") %>%
-  unlist %>%
-  matrix(4) %>% t
-
-file.exists("power_state")
-statemat = c()
-state_files = list.files("power_state")
-for(state_file in state_files)
-  statemat = rbind(statemat, data = read.csv(paste("power_state/",state_file,sep=""),header=T))
-statemat[,1] = statemat[,1] / 1000
-statemat = statemat[,-2]
-
-# SHIFT_FORWARD
-forward_shift          <- as.POSIXlt(statemat[,"timestamp"],origin="1970-01-01")
-forward_shift$hour     <- forward_shift$hour + 12
-statemat[,"timestamp"] <- as.numeric(forward_shift)
-# END SHIFT FORWARD
-
-
-powerstate_indeces = function(tt){
-  timing = max(which(tt >= statemat[,"timestamp"]))
-  ifelse(timing == -Inf,"Unknown", ifelse(statemat[timing, "event"]=="Screen turned off","Off","On"))
-}
-
-accmat[,"Power_State"] = sapply(accmat[,"timestamp"], powerstate_indeces)
-
-hours = function(timestamps){
-  days = as.POSIXlt(timestamps, origin = "1970-01-01") %>%
-    as.character %>%
-    map(function(x){if(is.na(x)){return(c("NA","NA"))}else{return(strsplit(x, " "))}}) %>%
-    unlist %>%
-    matrix(nrow=2) %>%
-    t
-  days = days[,1]
-  hours = as.POSIXlt(timestamps, origin = "1970-01-01") %>%
-    map(function(timestamp){timestamp %>%
-        unclass() %>%
-        unlist()}) %>%
-    data.frame() %>% 
-    cbind(timestamps) %>%
-    select(hour, min, sec) %>%
-    apply(1, function(times) sum(times * c(1, 1/60, 1/3600)))
-  output = as_data_frame(cbind(hours=hours, days=days))
-  output["hours"] = lapply(output["hours"], as.numeric)
-  return(output)
-}
-
-statemat[,c("hours","days")] = hours(statemat[,"timestamp"])
-daynames = unlist(unique(statemat["days"]))
-
-if(file.exists("survey_answers")){
-  survey_responses = NA
-  for(survey in list.files("survey_answers")){
-    survey_days = list.files(paste("survey_answers", survey, sep="/"))
-    for(survey_day in survey_days){
-      data = read.csv(paste("survey_answers", survey,survey_day,sep="/"))
-      data[,c("Days")] = unlist(strsplit(survey_day, " "))[[1]]
-      if(!sum(is.na(survey_responses))==0){survey_responses = data}
-      else{survey_responses = rbind(survey_responses,data)}
-    }
-  }
-  sleep_questions = c("Difficulty staying asleep","Difficulty falling asleep","Waking up too early","Don't feel rested after waking up")
-  sleep_responses = survey_responses[which(survey_responses[,"question.text"] %in% sleep_questions),]
-}
-
-
-sleepmat = accmat %>% select(Movement, Power_State,Days, Hours, Mins, Secs)
-sleepmat[,"Movement"] = sleepmat[,"Movement"]/sd(sleepmat[,"Movement"])
-sleepmat[,"Power_State"] = as.numeric(sleepmat[,"Power_State"] == "On")
-sleepmat[,"Power_State"] = sleepmat[,"Power_State"]/sd(sleepmat[,"Power_State"])
-sleepmat[,"Time"] = as.numeric(sleepmat[,"Hours"]) + as.numeric(sleepmat[,"Mins"])/60 + as.numeric(sleepmat[,"Secs"])/60/60
-sleepmat = sleepmat %>% select(Movement, Power_State, Days, Time, Hours)
-
-daynames = unique(sleepmat[,"Days"])
-T_est = matrix(NA, length(daynames),2)
-T_est_wald = rep(NA,length(daynames))
-for(i in seq_along(daynames)){
-  sleep_subset = sleepmat %>%
-    filter(Days == daynames[i]) %>% group_by(Hours) %>%
-    summarise(Move_Mean=mean(Movement), Power_Mean=mean(Power_State))
-  sleep_subset[,"Hours"] = as.numeric(unlist(sleep_subset[,"Hours"]))
-  obj = matrix(NA,24,24)
-  for(j in 2:12){
-  for(k in (j+2):24){
-  obj[j,k] = log(sleep_subset %>% filter(j>Hours | Hours>=k) %>% dplyr::select(Move_Mean, Power_Mean) %>% unlist %>% mean) - 
-    log(sleep_subset %>% filter(j<=Hours, Hours<k) %>% dplyr::select(Move_Mean, Power_Mean) %>% unlist %>% mean)
-  }}
+  setwd(paste(filename,patient,sep="/"))
   
-  maxes = which(obj==max(obj,na.rm=T),arr.ind=T)
-  if(dim(maxes)[1]==0){T_est[i,] = c(NA, NA)}
-  if(dim(maxes)[1]==1){T_est[i,] = maxes}
-  if(dim(maxes)[1]>1){T_est[i,] = maxes[1,]}
-  T_est_wald[i] = max(obj,na.rm=T) / sd(obj, na.rm=TRUE)
-}
-
-alphas_est = rep(NA,3)
-tS_bar = mean(T_est[,1],na.rm=TRUE)/24
-tA_bar = 1-mean(T_est[,2],na.rm=TRUE)/24
-tS_sd  = sd(T_est[,1],na.rm=TRUE)/24
-a0 = tS_bar*(1-tS_bar)/tS_sd - 1# MOM estimator (see your sheet!)
-alphas_est[1] = tS_bar * a0
-alphas_est[2] = tA_bar * a0
-alphas_est[3] = a0 - alphas_est[1] - alphas_est[2]
-if(min(alphas_est)<2.5) alphas_est = alphas_est/min(alphas_est)*2.5
-T_shrunk = matrix(NA, length(daynames),2)
-for(i in seq_along(daynames)){
-  sleep_subset = sleepmat %>%
-    filter(Days == daynames[i]) %>% group_by(Hours) %>%
-    summarise(Move_Mean=mean(Movement), Power_Mean=mean(Power_State))
-  sleep_subset[,"Hours"] = as.numeric(unlist(sleep_subset[,"Hours"]))
-  obj = matrix(NA,24,24)
-  for(j in 2:12){
-    for(k in (j+2):23){
-      obj[j,k] = (
-          log(sleep_subset %>% filter(j>Hours | Hours>=k) %>% select(Move_Mean, Power_Mean) %>% unlist %>% mean) - 
-        log(sleep_subset %>% filter(j<=Hours, Hours<k) %>% select(Move_Mean, Power_Mean) %>% unlist %>% mean)
-      ) * ddirichlet(c(j/24, 1-k/24, k/24-j/24),alpha=alphas_est)
-    }}
-  maxes = which(obj==max(obj,na.rm=T),arr.ind=T)
-  if(dim(maxes)[1]==0){T_shrunk[i,] = c(NA, NA)}
-  if(dim(maxes)[1]==1){T_shrunk[i,] = maxes}
-  if(dim(maxes)[1]>1){T_shrunk[i,] = maxes[1,]}
-}
-
-
-pdf("Initial_and_Adjusted.pdf",width=8,height=6)
-par(cex.lab=1.5,cex.main=1.5)
-plot(0,0,col=NA,xlim=c(0,24),ylim=c(1,nrow(T_est)),axes=FALSE,ylab="Day",xlab="",main="Initial and Centered Estimates")
-axis(1,at=c(0 ,12, 24),labels=c("Noon","Midnight","Noon"))
-points(T_est[,1],1:nrow(T_est),col=sleep_col,pch=1,cex=1.2)
-points(T_est[,2],1:nrow(T_est),col=wake_col,pch=1,cex=1.2)
-
-points(T_shrunk[,1],1:nrow(T_shrunk),col=sleep_col,pch=16,cex=1.2)
-points(T_shrunk[,2],1:nrow(T_shrunk),col=wake_col,pch=16,cex=1.2)
-box()
-legend("bottomleft",legend=c("Initial Sleep","Initial Wake","Centered Sleep","Centered Wake"),
-       ncol=1,pch=c(1,1,16,16),col=c(sleep_col,wake_col,sleep_col,wake_col),bg="white")
-dev.off()
-
-
-
-### Plotting
-daynames = unique(accmat[,"Days"])
-pdf("sleep.pdf",width=10,height=6)
-par(mfrow=c(3,4),mar=c(2,1.5,1,0)+1)
-for(i in 1:length(daynames)){#+30, or whatever
-  data = accmat[which(accmat[,"Days"]==daynames[i]),c("Hours","Mins","Movement","Power_State")]
-  movement = data[,"Movement"]
-  movement = movement/max(movement)
-  timing = as.numeric(data[,"Hours"])+as.numeric(data[,"Mins"])/60
-  plot(0,0, col=F, xlim=c(0,24),ylim=c(-.1,1), type="l", xlab="Time",ylab="Movement",xaxt="n",main=daynames[i])
-  axis(1,at=c(0, 12, 24),label=c("Noon", "Midnight", "Noon"))
-  for(j in seq_along(timing))
-    lines(rep(timing[j],2),c(0,-0.1),col=ifelse(data[j,"Power_State"]=="On",rgb(0,0,1), rgb(1,0,0,.05)),lwd=.2)
-  if(length(timing)>1){
-    for(j in 1:(length(timing)-1)){
-      if(timing[j+1]-timing[j] < .5){ # tests is time between intervals of accelerometer are less than 30 minutes.
-        lines(timing[j+0:1], movement[j+0:1])
-      }else{lines(timing[j+0:1], movement[j+0:1],col=rgb(.8,.8,.8))}
-    }
+  minute_mat = function(minute){
+    appended_acc_file = paste(filename,"/",patient,"/","appended_sheared_file_acc_",minute,".txt",sep="")
+    appended_pow_file = paste(filename,"/",patient,"/","appended_sheared_file_pow_",minute,".txt",sep="")
+    accmat = read.table(appended_acc_file,header=T, stringsAsFactors = FALSE)
+    powmat = read.table(appended_pow_file, header=T, stringsAsFactors = FALSE)
+    totmat = merge(x = accmat, y = powmat, by = "segment", all = TRUE)
+    totmat$screen_on_events[is.na(totmat$screen_on_events)]=0
+    
+    
+    colnames(totmat)[2] <- "timestamp"
+    totmat[,"timestamp"] = totmat[,"timestamp"] / 1000
+    movement = function(vec) sqrt(sum(vec**2))
+    totmat[,"Movement"] = apply(totmat[,c("x","y","z")],1,movement)
+    
+    # SHIFT_FORWARD
+    forward_shift        <- as.POSIXlt(totmat[,"timestamp"],origin="1970-01-01")
+    forward_shift$hour   <- forward_shift$hour + FORWARD_SHIFT
+    totmat[,"timestamp"] <- as.numeric(forward_shift)
+    totmat = totmat[,c("segment","timestamp","UTC_time.x","screen_on_events","Movement")]
+    totmat = totmat[complete.cases(totmat),]
+    # END SHIFT FORWARD
+    
+    totmat[,c("Days", "Hours","Mins","Secs")] = totmat[,2] %>%
+      as.POSIXct(origin="1970-01-01") %>%
+      as.character %>%
+      strsplit(" |:") %>%
+      unlist %>%
+      matrix(4) %>% t
+    
+    totmat["Hour_In_Day"] = as.numeric(data.matrix(totmat[,c("Hours","Mins","Secs")]) %*% c(1,1/60,1/3600))
+    totmat = totmat[,c("segment", "timestamp", "Days", "Hours", "Mins", "Secs", "Hour_In_Day", "Movement", "screen_on_events")]
+    totmat["Scaled_Movement"] = as.numeric(log10(.0001+totmat[,"Movement"]))
+    totmat["Scaled_Power_State"] = as.numeric(log10(1+totmat[,"screen_on_events"]))
+    totmat["Objective"] = as.numeric(data.matrix(totmat[,"Scaled_Movement"]))
+    #totmat["Objective"] = as.numeric(totmat["Scaled_Movement"]*1/2 + totmat["Scaled_Power_State"]*1/2)    
+    totmat = totmat[which(totmat["Objective"]> -3),]
+    return(totmat)
   }
-  surveys_to_print = which(unlist(sleep_responses["Days"]) == daynames[i])
-  if(length(surveys_to_print)>0){
-    for(j in seq_along(surveys_to_print)){
-      text(0+j*5,.8,sleep_responses[surveys_to_print[j],"answer"])
-    }
-  }
+  total_mat = minute_mat(60)
+  daily_mat = minute_mat(5)
+  total_mat[,"Objective"] = (total_mat[,"Objective"]-mean(total_mat[,"Objective"],na.rm=T))/sd(total_mat[,"Objective"],na.rm=T)
+  daily_mat[,"Objective"] = (daily_mat[,"Objective"]-mean(total_mat[,"Objective"],na.rm=T))/sd(total_mat[,"Objective"],na.rm=T)
   
-  lines(T_shrunk[i,],rep(-.03,2),col=rgb(.2,.6,.8),lwd=3)
-  lines(T_est[i,]   ,rep(-.08,2),col=rgb(.8,.2,.6),lwd=3)
-}
-dev.off()
-}
+  
+  daynames = unlist(unique(total_mat["Days"]))
+  daily5 = list()
+  daily60 = list()
+  for(dayname in daynames){
+    daily5[[dayname]] = daily_mat %>%
+      filter(Days==dayname) %>%
+      select(Hour_In_Day, Objective) %>%
+      filter(Objective> -2) %>%
+      mutate("diff_Hour_In_Day" = c(Hour_In_Day[1],diff(Hour_In_Day)))
+    daily60[[dayname]] = total_mat %>%
+      filter(Days==dayname) %>%
+      select(Hour_In_Day, Objective) %>%
+      filter(Objective> -2) %>%
+      mutate("diff_Hour_In_Day" = c(Hour_In_Day[1],diff(Hour_In_Day)))
+  }  
 
-# plot(T_est_wald)
+  time_sort = order(total_mat[,"Hour_In_Day"])
+  plot(total_mat[time_sort,"Hour_In_Day"],total_mat[time_sort,"Objective"],col=rgb(0,0,0,.05))
+  lines(lowess(total_mat[time_sort,"Hour_In_Day"],total_mat[time_sort,"Objective"],f=.125))
+  #plot(total_mat[,"Hour_In_Day"], total_mat[,"Objective"],col=rgb(0,0,0,.2)) #!!!!! total_mat was designed to be more sparse and stable, and faster.  This is probably unnecessary --- the slow part is inverting, I believe.
+  #lines(lowess(total_mat[,"Hour_In_Day"], total_mat[,"Objective"]))
+  
+  
+  psi_guess = c(8.5,4,16,4,-1,.5,1,1) # perhaps generic
+  daynames = names(daily5)
+  start = Sys.time()
+  output = Newton_Raphson_list(daily60, psi_guess, min_steps=50,max_steps=200,minimum_change_tolerated = .025, max_delta = .3, temperature = 0.075, record=TRUE)
+  max_liks = list()
+  for(dayname in daynames){
+    print(dayname)
+    max_liks[[dayname]] = max_lik_Psi_t_z(unlist(output$psi_hat), unlist(daily5[[dayname]]["Objective"]), unlist(daily5[[dayname]]["Hour_In_Day"]),mesh=0.25)
+    };stopt = Sys.time()
+  stopt-start
+  
+  psi = output$psi_hat
+  pdf("Newton_Raphson.pdf",width=7,height=5.5)
+  par(mgp=c(2.5,1,0))
+  plot(1:8+.025, psi,col=NA,pch=15,xlim=c(.3,8),ylim=c(-2, 18),xlab=expression(Psi),ylab="Estimates",xaxt="n",main="Convergence of Psi",cex.lab=1.5,cex.main=1.5)
+  axis(1,at=1:8,labels=Psi_labels)
+  for(i in 1:8)
+    lines(seq(i-.8,i-.1,length.out=output$num_steps),output$psi_hats[i,],col=rgb(.3,.3,.3),lwd=2)
+  points(1:8-.1, output$psi_hat, col=cool_blue, pch=16)
+  legend("topright",col=c(cool_blue),pch=c(16),legend=c("Estimate"),cex=1.2)
+  dev.off()
+  
+  
+  line = seq(-3,3,length.out=300)
+  pdf("Total.pdf",width=7.5,height=6)
+  par(cex.lab=1.5,cex.main=1.5,mgp=c(2.5,1,0))
+  psi_hat = output$psi_hat
+  ylims = range(total_mat[,"Objective"])
+  plot(total_mat[time_sort,"Hour_In_Day"],total_mat[time_sort,"Objective"],xlab="Hour",ylab="Objective",cex=.75,col=rgb(.0,.0,.0,.04),pch=16)
+  for(i in c(0,2)){
+    curve = dnorm(line*psi_hat[2+i]+psi_hat[1+i],psi_hat[1+i],psi_hat[2+i])
+    polygon(line*psi_hat[2+i]+psi_hat[1+i],curve*(ylims[2]-ylims[1])+ylims[1],col=cool_blue_alpha,border=NA)
+    lines(rep(psi_hat[1+i],2),ylims[1]+c(0,.3*(ylims[2]-ylims[1])),col=cool_blue,lwd=2)  
+  }
+  for(i in c(0,2)){
+    lines(TT+0:1/2+.25+i*.1,rep(psi_hat[5+i],2),col=cool_blue,lwd=2)  
+    lines(TT+0:1/2+.25+i*.1,rep(psi_hat[5+i]+qnorm(.975)*psi_hat[6+i],2),col=cool_blue,lwd=1)
+    lines(TT+0:1/2+.25+i*.1,rep(psi_hat[5+i]-qnorm(.975)*psi_hat[6+i],2),col=cool_blue,lwd=1)
+    lines(rep(TT+.5+i*.1,2),psi_hat[5+i]-c(0,qnorm(.975)*psi_hat[6+i]),col=cool_blue,lwd=1)
+    lines(rep(TT+.5+i*.1,2),psi_hat[5+i]+c(0,qnorm(.975)*psi_hat[6+i]),col=cool_blue,lwd=1)
+  }
+  dev.off()
+  
+  pdf("Daily.pdf",width=8,height=6)
+  par(mfrow=c(3,4),mgp=c(2,1,0),mar=c(3,2,2,1))
+  for(dayname in daynames){
+    if(!is.null(daily5[[dayname]])){
+      if(nrow(daily5[[dayname]])>0){
+        plot(daily5[[dayname]][,"Hour_In_Day"],daily5[[dayname]][,"Objective"],xlim=c(0,24),ylim=range(daily5[[dayname]][,"Objective"]),#,
+             xlab="Hour",ylab="Objective",main=dayname,cex=.75,col=rgb(.3,.3,.3),pch=16)
+        abline(v=max_liks[[dayname]][2:3],col=cool_blue,lty=2,lwd=1.5)
+      }
+    }
+  }
+  dev.off()
+  
+  
+  patient_estimates[[patient]][["psi_hat"]] = output$psi_hat
+  patient_estimates[[patient]][["SD"]] = output$SD
+  patient_estimates[[patient]][["Daily"]] = max_liks
+  
+}   
 
+saveRDS(patient_estimates,file=paste(filename,"patient_estimates.rds",sep="/"))
+#pat = readRDS(paste(filename,"patient_estimates.rds",sep="/"))
 
 
 
