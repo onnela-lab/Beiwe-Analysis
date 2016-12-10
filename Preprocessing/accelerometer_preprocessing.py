@@ -1,8 +1,8 @@
 import os, sys, math
 
-data_filepath = sys.argv[1] # "C:/Users/Patrick/Desktop/2016.10.20_justin_data"
-patient = sys.argv[2]       # "jr7j7cmd"
-minutes = int(sys.argv[3])  # 5
+data_filepath = sys.argv[1] # main folder, containing patient ID subfolders.  example: "C:/Users/Patrick/Desktop/2016.10.20_justin_data"
+patient = sys.argv[2]       # patient ID, as a subdirectory.  example: "jr7j7cmd"
+minutes = int(sys.argv[3])  # number of minutes to bin by.  example: 5
 acc_filename = data_filepath+"/"+patient+"/appended_sheared_file_acc_"+str(minutes)+".txt"
 pow_filename = data_filepath+"/"+patient+"/appended_sheared_file_pow_"+str(minutes)+".txt"
 if not os.path.isfile(acc_filename):
@@ -68,22 +68,3 @@ with open(pow_filename, "w") as F:
             to_write = " ".join(line[:2])
             to_write = to_write + " " + "-".join(date_and_time)
             F.write(to_write+" "+str(count) + '\n')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
