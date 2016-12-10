@@ -1,4 +1,10 @@
 warps = function(points, warp_matrix, pushes, sd1=1, sd2=1){
+  # input:  points: 2xN matrix of two-dimensional points   
+  #         warp_matrix: 2xK matrix of two-dimensional locations that warp `points`.
+  #         pushes: vector of integers, 1 iff warp_matrix row value pushes points.  (pulls otherwise)
+  #         sd1: breadth of the warp in dimension 1
+  #         sd2: breadth of the warp in dimension 2
+  # output: 2xN matrix of warped two-dimensional points   
   total_diffs = points*0
   if(is.vector(warp_matrix)) warp_matrix = t(warp_matrix)
   for(i in 1:nrow(warp_matrix)){
