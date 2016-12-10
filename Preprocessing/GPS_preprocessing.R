@@ -609,6 +609,8 @@ SimulateMobilityGaps = function(suboutmat,obj,wtype="TL",spread_pars=c(1,10)){
   return(foutmat)
 }
 
+
+  
 plotlimits = function(mat,defaultdist=100){
   xrang=range(c(mat[which(mat[,1]<=2),2],mat[which(mat[,1]<=1),5]))
   yrang=range(c(mat[which(mat[,1]<=2),3],mat[which(mat[,1]<=1),6]))
@@ -623,6 +625,7 @@ plotlimits = function(mat,defaultdist=100){
   return(list(xrang=xrang,yrang=yrang))
 }
 
+# This function may be outdated. We will want to replace it with the plots that Patrick has created incorporating other data streams.
 plot.flights=function(mat,xrang=NULL,yrang=NULL,diminch=6,add2plot=FALSE,addlegend=TRUE,outfile=NULL,title=NULL){
   #col24hour_v=c("#253494","#2c7fb8","#41b6c4","#7fcdbb","#c7e9b4","#ffffcc","#fed976","#feb24c","#fd8d3c","#fc4e2a","#e31a1c","#b10026","#7a0177","#ae017e","#dd3497","#f768a1","#fa9fb5","#fcc5c0","#edf8fb","#ccece6","#99d8c9","#66c2a4","#2ca25f","#006d2c")
   col24hour_v=c(c("#08306b","#08519c","#2171b5","#4292c6","#6baed6","#9ecae1","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"),rev(c("#08306b","#08519c","#2171b5","#4292c6","#6baed6","#9ecae1","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d")))  
