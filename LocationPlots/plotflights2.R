@@ -83,16 +83,6 @@ GPSarrow = function(x, y, length = .1,
   }
 }
 
-# pdf("hi.pdf")
-# plot(0,0,col=NA, xlim=c(-.5,.5),ylim=c(-.5,.5))
-# color = vermillion
-# GPSarrow(0,0,angle=0, solid_head = TRUE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
-# GPSarrow(.1,.1,angle=pi/4, solid_head = FALSE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
-# GPSarrow(.2,.2,angle=pi/2, solid_head = FALSE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
-# GPSarrow(.3,.3,angle=pi, solid_head = FALSE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
-# dev.off()
-
-
 plot.flights2 <-
   function(mat,xrang=NULL,yrang=NULL,diminch=6,add2plot=FALSE,addscale = TRUE, addlegend=TRUE,
            outfile=NULL,title=NULL, main_rectangle = NA){
@@ -266,8 +256,8 @@ hours = function(timestamps){ # converts timestamps into hour of the day.
   return(output)
 }
 
-patient_names = c("ws535wyt","x64sum6q","v5k3vk1b","upgskgun","euvxbf3w","dske5c2t") #just restricted to patients with full data for now
-setwd("C:/Users/Patrick/Desktop/schizophrenia_patients")
+#patient_names = c("ws535wyt","x64sum6q","v5k3vk1b","upgskgun","euvxbf3w","dske5c2t") #just restricted to patients with full data for now
+#setwd("C:/Users/Patrick/Desktop/schizophrenia_patients")
 
 for(patient in patient_names){#list.files()
   print(patient)
@@ -543,67 +533,6 @@ dev.off()
 
 }
 
-
-
-
-
-
-
-
-
-# # ### Convolution plots
-# plots_over_time = function(timestamps, unique_day_names, label, grid_mesh = 500){
-#   if(label == "Calls"){color = cerulean}else{color=vermillion}
-#   day_names = range(as.POSIXct(timestamps,tz=,origin="1970-01-01"))
-#   num_days = ceiling(as.numeric(max(day_names)-min(day_names)))
-#   
-#   plot(0,0,xlim=range(timestamps),col=NA,ylim=c(0,1), xaxt="n",yaxt="n",xlab="Days", ylab="Frequency", main = paste(label, "Frequency Over Time"))
-#   axis(1,at=seq(min(timestamps), max(timestamps), length.out=num_days), labels = 1:num_days)
-#   for(i in 1:length(timestamps))  lines(rep(timestamps[i],2), c(.6,.9),lwd=2,col=rgb(color[1],color[2],color[3],.2))
-#   kernel_width = (max(timestamps)-min(timestamps))/50
-#   frequencies = rep(NA, grid_mesh)
-#   grid = seq(min(timestamps),max(timestamps),length.out=grid_mesh)
-#   for(i in 1:grid_mesh)  frequencies[i] = sum(dnorm(timestamps,grid[i],kernel_width))
-#   lines(grid, frequencies/max(frequencies)*.5, lwd=2)
-#   
-#   
-#   times = as.POSIXct(timestamps,tz="",origin="1970-01-01") %>%
-#     as.character() %>%
-#     strsplit(., " ") %>%
-#     map(function(day_and_time){paste("1970-01-01", day_and_time[2], "EDT", sep=" ")}) %>%
-#     map(as.POSIXct) %>%
-#     map(as.numeric) %>%
-#     as.list() %>%
-#     do.call(rbind, .) %>%
-#     as.vector()
-#   grid = seq(min(times),max(times),length.out=grid_mesh)
-#   hours_of_day = c("12:00 AM", paste(seq(2,10,2),":00 AM",sep=""), "12:00 PM", paste(seq(2,10,2),":00 PM",sep=""), "12:00 AM")
-#   
-#   
-#   
-#   plot(0,0,xlim=18000+0:1*(24*60*60),col=NA,ylim=c(0,1),xaxt="n",yaxt="n",xlab="Time", ylab="Frequency", main=paste(label, "Times of Day"))
-#   axis(1, at=seq(0,24,2)*60*60+18000, label = hours_of_day)
-#   for(i in 1:length(times))  lines(rep(times[i],2), c(.6,.9),lwd=2,col=rgb(color[1],color[2],color[3],.2))
-#   kernel_width = 10000
-#   
-#   colors = rainbow(length(unique_day_names), start = 0, end= 2/3, alpha=.2)
-#   for(day_i in 1:length(unique_day_names)){
-#     frequencies = rep(NA, grid_mesh)
-#     times_subset = times[text_subsets[[unique_day_names[day_i]]]]
-#     for(i in 1:grid_mesh)  frequencies[i] = sum(dnorm(times_subset,grid[i],kernel_width))
-#     lines(grid, frequencies*1000, col=colors[day_i], lwd=3)
-#   }
-# }
-# 
-# pdf("Texts.pdf", width = 8, height=6)
-# par(cex=1.2)
-# plots_over_time(textmat[,"timestamp"], names(text_subsets), "Texts")
-# dev.off()
-# 
-# pdf("Calls.pdf", width = 8, height=6)
-# par(cex=1.2)
-# plots_over_time(callmat[,"timestamp"], names(call_subsets), "Calls")
-# dev.off()
 
 
 
