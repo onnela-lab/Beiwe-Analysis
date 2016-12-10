@@ -68,3 +68,6 @@ with open(pow_filename, "w") as F:
             to_write = " ".join(line[:2])
             to_write = to_write + " " + "-".join(date_and_time)
             F.write(to_write+" "+str(count) + '\n')
+
+            
+            
