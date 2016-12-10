@@ -8,8 +8,8 @@ library(purrr)
 detach("package:plyr", unload=TRUE)
 
 text_features = function(textmat){
-  # input:  textmat, a processed array of texts.
-  # output: text_features, a processed array with text features.
+  # input:  textmat, a processed array of texts
+  # output: text_features, a processed array with text features
   day = function(timestamp) strsplit(as.character(as.POSIXct(timestamp,tz="",origin="1970-01-01"))," ")[[1]][1]
   textmat_f = textmat # textmat for the features
   textmat_f[,"day"] = sapply(textmat[,"timestamp"], day)
