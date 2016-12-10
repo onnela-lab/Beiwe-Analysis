@@ -1,5 +1,7 @@
 
 text_preprocessing = function(){
+  # input: none
+  # output: matrix consisting of the power state for all patients and UNIX time stamps in seconds. (this standard should probably be changed.)
   if(file.exists("texts")){
     textmat = c()
     text_files = list.files("texts")
