@@ -23,7 +23,7 @@ The goal of preprocessing with raw Beiwe data or collaborator is to convert it t
 ## Processing
 Even after preprocessing, most analyses require basic steps before creating plots or performing statistical analysis.  For example, plotting may require preprocessed data using several different datasteams, or statistical analysis may require comparing one time with a fixed time lag in the past.  To avoid errors in these tasks, we list how we do them here.  Data is called ***processed*** if it is preprocessed, and is the product of the functions specified here.  The goal is to do as much processing as possible using only these functions.
 
-## Output
+## Outputs
 Once the data is processed, we arrive at the juicy part: plots and statistical analysis.  These functions take processed data in a specified format as inputs, and return highly specific ***outputs*** such as plots, models, or tests.  These functions should not contain any processing steps.
 
 
