@@ -1,0 +1,613 @@
+library(GPSmobility)
+library(stringr)
+library(pryr)
+library(dplyr)
+library(purrr)
+
+cerulean    = c(.2,.3,.8)
+vermillion  = c(.8,.25,.2)
+limegreen   = c(.35,1,0)
+midcolumn_x = c(.07, .11)
+
+cols = function(n,dirtiness=.2,darkness=.8,transparency=0,...){
+  alpha = 1 - transparency
+  colors = rainbow(n,alpha,...) 
+  f = function(colors, val) strtoi(paste("0x",substr(colors,2*val, 2*val + 1),sep="")) 
+  rgb = cbind(f(colors, 1),f(colors, 2),f(colors, 3))
+  new_rgba = cbind(floor((rgb+(1-rgb/256)*dirtiness*256)*(1-darkness*dirtiness)),f(colors, 4))
+  new_colors = apply(matrix(format(as.hexmode(new_rgba),upper.case=TRUE,width=2),ncol=4),1,function(strings) paste("#",paste(strings,collapse=""),sep=""))
+  return(new_colors)
+}
+
+
+light_color = function(color, ink_depth, ink_minimum = .2){
+  ink_depth = ink_depth*.8+.2
+  output = rgb(1-(1-color[1])*ink_depth, 1-(1-color[2])*ink_depth, 1-(1-color[3])*ink_depth) 
+  return(output)
+}
+
+
+GPSlocation = function(time_of_interest, mobility_matrix){
+  row = try(min(which((mobility_matrix[,"t0"] < time_of_interest) & (time_of_interest < mobility_matrix[,"t1"]))))
+  if(row != Inf){# this function 
+    code = mobility_matrix[row,"Code"]
+    timestamp = mobility_matrix[row,"t0"]
+    if(code==1){
+      row_time = mobility_matrix[row,c("t0","t1")]
+      time_within_row = (row_time[2] - time_of_interest)/(row_time[2]-row_time[1])
+      GPS_location = apply(rbind(mobility_matrix[row,c("x0","y0")], mobility_matrix[row,c("x1","y1")]),2,
+                           weighted.mean, w = c(1-time_within_row,time_within_row))
+      return(c(GPS_location,code,timestamp))
+    }
+    if(mobility_matrix[row,"Code"] %in% c(2,3))
+      return(c(mobility_matrix[row,c("x0","y0")],code, timestamp))
+    if(code== 4)
+      return(c(NA,NA,code, timestamp))
+  }
+  else(return(NA))
+}
+
+GPSarrow = function(x, y, length = .1,
+                    angle = 0,
+                    arrowhead_at_end = TRUE,
+                    solid_head = TRUE,
+                    arrowcolor = rgb(.5,.5,.5),
+                    arrow_thickness = .9,
+                    arrowhead_length = .1,
+                    solid_arrowhead_length = .2,
+                    arrow_width = .6){
+  arrowhead_length = arrowhead_length*length
+  solid_arrowhead_length = solid_arrowhead_length*length
+  arrow_narrowness = 2.3 + (3-2.3)*(1-arrow_width)
+  x1 = x+cos(angle)*length
+  y1 = y+sin(angle)*length
+  if(!arrowhead_at_end){
+    x2 = x
+    y2 = y
+    x = x1
+    y = y1
+    x1 = x2
+    y1 = y2
+    angle = angle+pi
+  }
+  lines(c(x,x1),c(y,y1),lwd=arrow_thickness,col=arrowcolor)
+  if(solid_head){
+    polygon(
+      c(x1,x1+cos(angle+pi*arrow_narrowness/3*c(-1,1))*solid_arrowhead_length),
+      c(y1,y1+sin(angle+pi*arrow_narrowness/3*c(-1,1))*solid_arrowhead_length),col=arrowcolor,
+      border=arrowcolor,lwd=arrow_thickness)
+  }
+  if(!solid_head){
+    lines(c(x1,x1+cos(angle+pi*arrow_narrowness/-3)*solid_arrowhead_length),c(y1,y1+sin(angle+pi*2.55/-3)*solid_arrowhead_length),lwd=arrow_thickness,col=arrowcolor)
+    lines(c(x1,x1+cos(angle+pi*arrow_narrowness/3 )*solid_arrowhead_length),c(y1,y1+sin(angle+pi*2.55/3 )*solid_arrowhead_length),lwd=arrow_thickness,col=arrowcolor)
+  }
+}
+
+# pdf("hi.pdf")
+# plot(0,0,col=NA, xlim=c(-.5,.5),ylim=c(-.5,.5))
+# color = vermillion
+# GPSarrow(0,0,angle=0, solid_head = TRUE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
+# GPSarrow(.1,.1,angle=pi/4, solid_head = FALSE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
+# GPSarrow(.2,.2,angle=pi/2, solid_head = FALSE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
+# GPSarrow(.3,.3,angle=pi, solid_head = FALSE, arrowhead_at_end = FALSE, arrowcolor=light_color(color, .0))
+# dev.off()
+
+
+plot.flights2 <-
+  function(mat,xrang=NULL,yrang=NULL,diminch=6,add2plot=FALSE,addscale = TRUE, addlegend=TRUE,
+           outfile=NULL,title=NULL, main_rectangle = NA){
+
+    #col24hour_v=c(c("#08306b","#08519c","#2171b5","#4292c6","#6baed6","#9ecae1","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"),rev(c("#08306b","#08519c","#2171b5","#4292c6","#6baed6","#9ecae1","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d")))
+    col24hour_v=gray(seq(.85,.15,length.out=24))
+    
+    if(nrow(mat)==0){
+      return(NULL)
+    }
+    if(add2plot){outfile=NULL}
+    write2file=FALSE
+    if(!is.null(outfile)){
+      write2file=TRUE
+    }
+    if(write2file){
+      pdf(outfile,width=diminch*11/10,height=diminch)
+    }
+    if(is.null(xrang)){
+      xrang=plotlimits(mat)$xrang
+    }
+    if(is.null(yrang)){
+      yrang=plotlimits(mat)$yrang
+    }
+    xrang[1]=xrang[1]-(xrang[2]-xrang[1])/10
+    if(!add2plot){
+      if(!is.null(title)){
+        par(mai=c(0,0,.4,0))      
+        plot(NA,xlim=xrang
+             ,ylim=yrang
+             ,xaxt="n"
+             ,yaxt="n"
+             ,xlab=""
+             ,ylab=""
+             ,bty="n"
+             ,main=title)  
+      }else{
+        par(mai=c(0,0,0,0))      
+        plot(NA,xlim=xrang
+             ,ylim=yrang
+             ,xaxt="n"
+             ,yaxt="n"
+             ,xlab=""
+             ,ylab=""
+             ,bty="n"
+             ,main="")        
+      }
+      
+      if(!is.na(main_rectangle)){
+        par(xpd=NA)
+        left_rect = c(xrang+c(-1,1)*.0*(xrang[2]-xrang[1]), yrang+c(-1,1)*.0*(yrang[2]-yrang[1]))
+        polygon(c(left_rect[1],left_rect[1],left_rect[2],left_rect[2]),
+                c(left_rect[3],left_rect[4],left_rect[4],left_rect[3]),
+                border="gray", lwd=.75, lty = 1)
+        par(xpd=FALSE)
+      }
+      
+      
+      
+      xleg1=xrang[1] + (xrang[2]-xrang[1])*.02  
+      xleg2=xleg1+(xrang[2]-xrang[1])*.038
+      xleg_mid = xleg1 + (xrang[2]-xrang[1])*.015
+      yincr=(yrang[2]-yrang[1]) * 0.022
+      legtext=c(" 6AM"," 12PM"," 6PM"," 12AM")
+      if(addlegend){
+        for(i in 1:24){
+          polygon(c(xleg1,xleg1,xleg2,xleg2),c(yrang[1]+(i-1)*yincr,yrang[1]+i*yincr,yrang[1]+i*yincr,yrang[1]+(i-1)*yincr),col=col24hour_v[i])
+          if(i%%6==0){
+            text(xleg2,yrang[1]+i*yincr,legtext[floor(i/6)],adj=0,cex=.5)        
+          }
+        }
+        lines(c(xleg1,xleg1*.2+xleg2*.8), rep(yrang[1]+27*yincr, 2), lty=2)
+        text(xleg2,yrang[1]+27*yincr,"Flight",adj=0,cex=.5)
+        points(xleg_mid,yrang[1]+29*yincr,cex=2,pch=16)
+        text(xleg2,yrang[1]+29*yincr,">4 Hr Pause",adj=0,cex=.5)
+        points(xleg_mid,yrang[1]+31*yincr,cex=1,pch=16)
+        text(xleg2,yrang[1]+31*yincr,"1 Hr Pause",adj=0,cex=.5)
+        points(xleg_mid,yrang[1]+33*yincr,cex=.5,pch=16)
+        text(xleg2,yrang[1]+33*yincr,"<30 Min Pause",adj=0,cex=.5)
+        text(xleg2,yrang[1]+35*yincr,"Calls",adj=0,cex=.5)
+        text(xleg2,yrang[1]+37*yincr,"Texts",adj=0,cex=.5)
+        GPSarrow(xleg1,yrang[1]+35*yincr, arrowcolor = light_color(cerulean, ink_depth = .5),  length=(xrang[2]-xrang[1])*.025, arrow_thickness = 1.2, arrow_width = 1, solid_arrowhead_length = .35)
+        GPSarrow(xleg1,yrang[1]+37*yincr, arrowcolor = light_color(vermillion, ink_depth = .5),length=(xrang[2]-xrang[1])*.025, arrow_thickness = 1.2, arrow_width = 1, solid_arrowhead_length = .35)
+        points(mean(xleg_mid,xleg2),yrang[1]+39*yincr,cex=.5,pch=16, col = light_color(limegreen, 1))
+        text(xleg2,yrang[1]+39*yincr,"Screen On/Off",adj=0,cex=.5)
+        #text(xleg1,yrang[1]+32.3*yincr,"Pause\nDuration",adj=0,cex=.5)
+      }
+      if(addscale){
+        y_leg = yrang[2]-(yrang[2]-yrang[1])*.01
+        legdist=10^floor(log10((yrang[2]-yrang[1])*.2))
+        lines(c(xleg_mid,xleg_mid),c(y_leg,y_leg-legdist))
+        lines(xleg_mid+c(-1,1)*(xrang[2]-xrang[1])/120,c(y_leg,y_leg))
+        lines(xleg_mid+c(-1,1)*(xrang[2]-xrang[1])/120,c(y_leg-legdist,y_leg-legdist))
+        if(log10(legdist)<3){
+          text(xleg_mid+(xrang[2]-xrang[1])/50,y_leg-legdist/2,paste(as.character(legdist),"m"),cex=.5,srt=270,adj=c(.5,0))      
+        }else{
+          text(xleg_mid+(xrang[2]-xrang[1])/50,y_leg-legdist/2,paste(as.character(legdist/1000),"km"),cex=.5,srt=270,adj=c(.5,0))      
+        } 
+      }
+    }
+    for(i in 1:nrow(mat)){
+      hour=unlist(floor(mat[i,"hours"]))
+      if(mat[i,1]==1){
+        lines(c(mat[i,2],mat[i,5]),c(mat[i,3],mat[i,6]),col=col24hour_v[hour+1])
+      }
+      if(mat[i,1]==2){
+        pwidth=max(.5,min(sqrt(2*(mat[i,7]-mat[i,4])/7200),2))
+        points(mat[i,2],mat[i,3],pch=1,col=paste(col24hour_v[hour+1],"CC",sep=""),cex=pwidth)
+      }
+    }  
+    if(write2file){
+      dev.off()
+    }
+  }
+
+daily_subsets = function(mat, time_string = "t0", end_time_string = NA, tz=""){
+  curdate=strsplit(as.character(as.POSIXct(as.numeric(mat[1,time_string]),tz=tz,origin="1970-01-01"))," ")[[1]][1]
+  curtime=strsplit(strsplit(as.character(as.POSIXct(as.numeric(mat[1,time_string]),tz=tz,origin="1970-01-01"))," ")[[1]][2],":")
+  subsetinds_v = list()
+  daystr_v = c(curdate)
+  dayind=1
+  subsetinds = c(1)
+  for(i in 2:nrow(mat)){
+    nexdate=strsplit(as.character(as.POSIXct(as.numeric(mat[i,time_string]),tz=tz,origin="1970-01-01"))," ")[[1]][1]
+    if(nexdate == curdate && i<nrow(mat)){
+      subsetinds=c(subsetinds,i)
+    }else{
+      subsetinds_v[[curdate]]=subsetinds
+      dayind=dayind+1
+      if(mat[i-1,1]==2 && (mat[i-1,end_time_string]-mat[i-1,time_string])/(60*60*24)>1){
+        ii=1
+        middate = strsplit(as.character(as.POSIXct(as.numeric(mat[i-1,time_string])+(60*60*24)*ii,tz=tz,origin="1970-01-01"))," ")[[1]][1]
+        while(middate!=nexdate){
+          subsetinds_v[[dayind]]=i-1
+          dayind=dayind+1
+          if(middate!=daystr_v[length(daystr_v)]){
+            daystr_v=c(daystr_v,middate)        
+          }          
+          ii=ii+1
+          middate = strsplit(as.character(as.POSIXct(as.numeric(mat[i-1,time_string])+(60*60*24)*ii,tz=tz,origin="1970-01-01"))," ")[[1]][1]
+        }
+      }
+      curdate=nexdate
+      subsetinds=c(i-1,i)
+      if(curdate!=daystr_v[length(daystr_v)] && length(daystr_v)!=length(subsetinds_v)){
+        daystr_v=c(daystr_v,curdate)        
+      }
+    }
+  }  
+  return(subsetinds_v)
+}
+
+hours = function(timestamps){ # converts timestamps into hour of the day.
+  days = timestamps %>% unlist %>% as.POSIXlt(origin = "1970-01-01") %>%
+    as.character %>%
+    map(function(x){if(is.na(x)){return(c("NA","NA"))}else{return(strsplit(x, " "))}}) %>%
+    unlist %>%
+    matrix(nrow=2) %>%
+    t
+  days = days[,1]
+  hours = as.POSIXlt(timestamps, origin = "1970-01-01") %>%
+    map(function(timestamp){timestamp %>%
+        unclass() %>%
+        unlist()}) %>%
+    data.frame() %>% 
+    cbind(timestamps) %>%
+    select(hour, min, sec) %>%
+    apply(1, function(times) sum(times * c(1, 1/60, 1/3600)))
+  output = as_data_frame(cbind(hours=hours, days=days))
+  output["hours"] = lapply(output["hours"], as.numeric)
+  return(output)
+}
+
+patient_names = c("ws535wyt","x64sum6q","v5k3vk1b","upgskgun","euvxbf3w","dske5c2t") #just restricted to patients with full data for now
+setwd("C:/Users/Patrick/Desktop/schizophrenia_patients")
+
+for(patient in patient_names){#list.files()
+  print(patient)
+  setwd(paste("C:/Users/Patrick/Desktop/schizophrenia_patients/",patient,"/gps",sep=""))
+  load("sz_patient.Rdata")
+  setwd(paste("C:/Users/Patrick/Desktop/schizophrenia_patients",patient,sep="/"))
+
+# Warp the GPS data.
+num_warps  = 10
+warp_matrix = matrix(c(runif(num_warps,min(mobmat[,c("x0","x1")],na.rm=T), max(mobmat[,c("x0","x1")],na.rm=T)),
+                       runif(num_warps,min(mobmat[,c("y0","y1")],na.rm=T), max(mobmat[,c("y0","y1")],na.rm=T))),num_warps,2)
+pushes = rep(c(1,0),length.out=num_warps)
+sds = 2*apply(mobmat[,c("x0","y0")], 2, sd, na.rm=TRUE)
+mobmat[,c("x0","y0")] = warps(mobmat[,c("x0","y0")], warp_matrix, pushes, sd1=sds[1],sd2=sds[2])
+mobmat[,c("x1","y1")] = warps(mobmat[,c("x1","y1")], warp_matrix, pushes, sd1=sds[1],sd2=sds[2])
+
+textmat=c();callmat=c();statemat=c();accmat=c()
+textlocs=c();calllocs=c()
+if(file.exists("texts")){
+  textmat = c()
+  text_files = list.files("texts")
+  for(text_file in text_files)
+    textmat = rbind(textmat, data = read.csv(paste("texts/",text_file,sep=""),header=T))
+  textmat[,1] = textmat[,1] / 1000
+  textmat = textmat[,-2]
+  textmat[,c("hours","days")] = hours(textmat[,"timestamp"])
+}
+
+if(file.exists("calls")){
+  callmat = c()
+  call_files = list.files("calls")
+  for(call_file in call_files)
+    callmat = rbind(callmat, data = read.csv(paste("calls/",call_file,sep=""),header=T))
+  callmat[,1] = callmat[,1] / 1000
+  callmat = callmat[,-2]
+  callmat[,c("hours","days")] = hours(callmat[,"timestamp"])  
+}
+if(file.exists("power_state")){
+  statemat = c()
+  state_files = list.files("power_state")
+  for(state_file in state_files)
+    statemat = rbind(statemat, data = read.csv(paste("power_state/",state_file,sep=""),header=T))
+  statemat[,1] = statemat[,1] / 1000
+  statemat = statemat[,-2]
+}
+if(file.exists("accelerometer")){
+  accmat = read.csv("accelerometer/appended_sheared_file.txt",header=T)
+  accmat[,1] = accmat[,1] / 1000
+  accmat[,c("hours","days")]    = hours(accmat[,"timestamp"])
+}
+if(file.exists("texts")){
+textlocs = textmat[,1] %>%
+  map(GPSlocation, mobility_matrix = mobmat) %>%
+  do.call(rbind, .) %>%
+  as.data.frame() %>%
+  cbind(textmat[,c("message.length","sent.vs.received")])
+colnames(textlocs) = c("x","y", "code", "timestamp","length", "sent.vs.received")
+textlocs[,c("hours","days")]  = hours(textlocs[,"timestamp"])
+}
+if(file.exists("calls")){
+calllocs = callmat[,1] %>%
+  map(GPSlocation, mobility_matrix = mobmat) %>%
+  do.call(rbind, .) %>%
+  as.data.frame() %>%
+  cbind(callmat[,c("duration.in.seconds","call.type")])
+colnames(calllocs) = c("x","y", "code", "timestamp","length","call.type")
+calllocs[,c("hours","days")]  = hours(calllocs[,"timestamp"])
+}
+if(file.exists("power_state")){
+statelocs = statemat[,1] %>%
+  map(GPSlocation, mobility_matrix = mobmat) %>%
+  do.call(rbind, .) %>%
+  as.data.frame() %>%
+  cbind(statemat[,c("event")])
+colnames(statelocs) = c("x","y", "event","timestamp","screen")
+statelocs[,c("hours","days")] = hours(unlist(statelocs[,"timestamp"]))
+statemat[,c("hours","days")]  = hours(statemat[,"timestamp"])
+}
+
+mobmat = as_data_frame(mobmat)
+mobmat[,c("hours","days")] = hours(unlist(mobmat[,"t0"]))
+mob_subsets = daily_subsets(mobmat, "t0", "t1")
+
+if(file.exists("texts")){
+  #textlocs_counts  = ddply(textlocs,.(x,y,code,length,sent.vs.received,hours),nrow)
+  text_subsets = daily_subsets(textmat, "timestamp")
+  max_text_length = max(textlocs[,"length"])
+}
+if(file.exists("calls")){
+  #calllocs_counts  = ddply(calllocs,.(x,y,code,length,call.type,hours),nrow)
+  call_subsets = daily_subsets(callmat, "timestamp")
+  max_call_length = max(calllocs[,"length"])
+  call_brightness = calllocs[,"length"]
+}
+if(file.exists("power_state")){
+  #statelocs_counts = ddply(statelocs,.(x,y,event,hours),nrow)
+  state_subsets = daily_subsets(statemat, "timestamp")
+}
+
+total_plot = function(mob_layer, textmat_layer=NA, textlocs_layer=NA,callmat_layer=NA, calllocs_layer=NA,
+                      state_layer=NA, acc_layer = NA,rectangle = NA, rect_col = "black",
+                      rect_lwd = 1.5, rect_lty = 1, second_arrow = TRUE,arrowhead_at_end = TRUE, solid_head=TRUE,
+                      text_brightness=.5, call_brightness=.5,...){
+  plot.flights2(mob_layer, ...)
+  color = vermillion
+  if(length(unlist(textlocs_layer))>0){if(sum(!is.na(textlocs_layer))>0){
+    for(i in 1:nrow(textlocs_layer)){
+      text_brightness = textlocs_layer[i,"length"]/max_text_length
+      angle = i/nrow(textlocs_layer)*pi*.9 # ensures full spread across quadrants 1 and 2
+      #angle = pi/2-text_layer[i,"hours"]/24*2*pi # 24-hour clock.
+      if(!is.na(angle)) if(angle<=0) angle = angle + 2*pi
+
+      arrowhead_at_end = textlocs_layer[i,"sent.vs.received"] == "sent SMS"
+      GPSarrow(textlocs_layer[i,1], textlocs_layer[i,2],
+               length = global_relative_length * global_length,
+               angle=angle, arrowhead_at_end = arrowhead_at_end,
+               arrowcolor=light_color(color, text_brightness))
+    }}}
+    if(length(unlist(textmat_layer))>0){if(sum(!is.na(textmat_layer))>0){
+      for(i in 1:nrow(textmat_layer)){
+        par(xpd=NA)
+        GPSarrow(xrang[2]+(xrang[2]-xrang[1])*midcolumn_x[1],yrang[1]+(yrang[2]-yrang[1])*textmat_layer[i,"hours"]/24*inner_box_top, # pretty clunky.  But it get both arrows on!
+               length = global_relative_length * global_length,
+               angle=pi, arrowhead_at_end = arrowhead_at_end,solid_head = TRUE,
+               arrowcolor=light_color(color, text_brightness))
+        par(xpd=FALSE)
+    }}}
+  color = cerulean
+  if(length(unlist(calllocs_layer))>0){if(sum(!is.na(calllocs_layer))>0){
+    for(i in 1:nrow(calllocs_layer)){
+      call_brightness = calllocs_layer[i,"length"]/max_call_length
+      angle = pi-i/nrow(calllocs_layer)*pi*.9 # ensures full spread across quadrants 3 and 4
+      #angle = pi/2-call_layer[i,"hours"]/24*2*pi # 24-hour clock.
+      if(!is.na(angle)) if(angle<=0) angle = angle + 2*pi
+      solid_head = calllocs_layer[i,"call.type"] != "Missed Call"
+      if(sum(!is.na(calllocs_layer))>0) arrowhead_at_end = calllocs_layer[i,"call.type"] == "Outgoing Call"
+      
+      if(sum(!is.na(calllocs_layer))>0) GPSarrow(calllocs_layer[i,"x"], calllocs_layer[i,"y"],
+               length = global_relative_length * global_length,
+               angle=angle, arrowhead_at_end = arrowhead_at_end,
+               solid_head = solid_head,
+               arrowcolor=light_color(color, call_brightness))
+    }}}      
+    if(length(unlist(callmat_layer))>0){if(sum(!is.na(callmat_layer))>0){
+      for(i in 1:nrow(callmat_layer)){
+      par(xpd=NA)
+      GPSarrow(xrang[2]+(xrang[2]-xrang[1])*midcolumn_x[1],yrang[1]+(yrang[2]-yrang[1])*callmat_layer[i,"hours"]/24*inner_box_top,
+               length = global_relative_length * global_length,
+               angle=pi, arrowhead_at_end = arrowhead_at_end,
+               solid_head = solid_head,
+               arrowcolor=light_color(color, call_brightness))
+      par(xpd=FALSE)
+      }}}
+  if(length(unlist(state_layer))>0){if(sum(!is.na(state_layer))>0){
+    color = light_color(limegreen,1)
+    for(i in 1:nrow(state_layer)){
+      points(state_layer[i,1], state_layer[i,2], col=color,pch=16,cex=.4)
+    }
+  }}
+  if(sum(!is.na(rectangle))>0){
+    polygon(c(rectangle[1],rectangle[1],rectangle[3],rectangle[3]),
+            c(rectangle[2],rectangle[4],rectangle[4],rectangle[2]),
+            border=rect_col, lwd=rect_lwd, lty = rect_lty)
+  }
+}
+
+daynames = list(
+  unique(textlocs[,"days"]),
+  unique(calllocs[,"days"]),
+  unique(statelocs[,"days"])) %>%
+  Reduce(union, .) %>%
+  unique %>% sort %>% setdiff("NA")
+
+rang_mat = matrix(NA,length(daynames),4)
+for(day_ind in seq_along(daynames)){
+  mob_layer = mobmat %>% subset(days==daynames[day_ind])
+  lims = plotlimits(mob_layer)
+  rang_mat[day_ind,] = c(lims$xrang, lims$yrang)[c(1,3,2,4)]
+}
+S = c(5e8, 1e10, 1e11,1e13)
+lims = Fuzzy.Window(rang_mat,S)
+lims$days = daynames
+
+inner_box_top = 0.9
+pdf("Daily_Plots.pdf", width=9,height=4.25)
+  par(cex=1.8, mfrow=c(1,2))
+  for(day_ind in seq_along(daynames)){
+    textmat_layer = NA; textlocs_layer = NA; callmat_layer = NA; calllocs_layer = NA; state_layer = NA; acc_layer = NA
+    mob_layer = mobmat[mob_subsets[[daynames[day_ind]]],]
+    if(is.null(nrow(mob_layer))) mob_layer = t(as.data.frame(mob_layer))
+    if(daynames[day_ind] %in% unique(textlocs[,"days"])){
+      textmat_layer = textmat %>% subset(days==daynames[day_ind])
+      textlocs_layer = textlocs %>% subset(days==daynames[day_ind])
+    }
+    if(daynames[day_ind] %in% unique(calllocs[,"days"])){
+      callmat_layer = callmat %>% subset(days==daynames[day_ind])
+      calllocs_layer = calllocs %>% subset(days==daynames[day_ind])
+    }
+    if(daynames[day_ind] %in% unique(statelocs[,"days"])){
+      state_layer = statelocs %>% subset(days==daynames[day_ind])
+    }
+    if(daynames[day_ind] %in% unique(accmat[ ,"days"])){
+      acc_layer = accmat %>% subset(days==daynames[day_ind])
+    }
+    if(daynames[day_ind] %in% unique(statemat[,"days"])){
+      statemat_layer = statemat %>% subset(days == daynames[day_ind])
+    }
+    
+    xrang=plotlimits(mobmat)$xrang
+    yrang=plotlimits(mobmat)$yrang
+    if(xrang[2]-xrang[1]>yrang[2]-yrang[1]){ # inserted from plot.flights2.
+      dif=((xrang[2]-xrang[1])-(yrang[2]-yrang[1]))
+      yrang[2] = yrang[2]+dif/2
+      yrang[1] = yrang[1]-dif/2
+    }else{
+      dif=((yrang[2]-yrang[1])-(xrang[2]-xrang[1]))
+      xrang[2] = xrang[2]+dif/2
+      xrang[1] = xrang[1]-dif/2    
+    }#end insertion.
+    global_length = max(xrang[2]-xrang[1], yrang[2]-yrang[1])
+    global_relative_length = 0.05
+    total_plot(mob_layer, textmat_layer, textlocs_layer, callmat_layer, calllocs_layer,
+               state_layer, xrang = xrang, yrang = yrang,
+               rectangle = lims$W[day_ind,], rect_lwd=.75, rect_col="gray", rect_lty=2,
+               addlegend=TRUE, main_rectangle = "",title="Static Global View")
+    
+    par(xpd=NA)
+    #statemat_layer = as_data_frame(rbind(statemat_layer[1,],statemat_layer,statemat_layer[nrow(statemat_layer),]))
+    #statemat_layer[1,c("event","hours")] = c(ifelse(statemat_layer[1,"event"]=="Screen turned on","Screen turned off","Screen turned on"),0)
+    #statemat_layer[nrow(statemat_layer),c("event","hours")] = c(ifelse(statemat_layer[nrow(statemat_layer),"event"]=="Screen turned on","Screen turned off","Screen turned on"),24)
+    #statemat_layer[,"hours"] = sapply(statemat_layer[,"hours"], as.numeric) # these four lines fill in states, where you should actually actually look to previous days' data.
+    
+    for(i in 1:(nrow(statemat_layer)-1)){
+      polygon(xrang[2]+(xrang[2]-xrang[1])*midcolumn_x[c(1,1,2,2)],
+              yrang[1]+unlist(statemat_layer[i+c(0,1,1,0),"hours"])/24*(yrang[2]-yrang[1])*inner_box_top,#yrang[c(1,2,2,1)],
+              border=FALSE,col=ifelse(statemat_layer[i,"event"]=="Screen turned on",light_color(limegreen,1), rgb(.95,.95,.95)))#
+    }
+    
+    if(sum(!is.na(acc_layer))>0){
+      timing=as.numeric(acc_layer[,"hours"])
+      movement=apply(acc_layer[,c("x","y","z")],1,function(x) sqrt(sum(x**2)))
+      movement = movement/max(movement)
+      if(length(timing)>1){
+        for(j in 1:(length(timing)-1)){
+          if(timing[j+1]-timing[j] < .5){ # tests is time between intervals of accelerometer are less than 30 minutes.
+            lines(xrang[2]+(xrang[2]-xrang[1])*(midcolumn_x[2]+movement[j+0:1]*(midcolumn_x[2]-midcolumn_x[1])), yrang[1]+(yrang[2]-yrang[1])*timing[j+0:1]/24*inner_box_top)
+          }else{lines(xrang[2]+(xrang[2]-xrang[1])*(midcolumn_x[2]+movement[j+0:1]*(midcolumn_x[2]-midcolumn_x[1])), yrang[1]+(yrang[2]-yrang[1])*timing[j+0:1]/24*inner_box_top,col=rgb(.8,.8,.8))}
+        }
+      }
+    }
+    polygon(xrang[2]+(xrang[2]-xrang[1])*midcolumn_x[c(1,1,2,2)], yrang[1]+(yrang[c(1,2,2,1)]-yrang[1])*inner_box_top)
+    text(rep(xrang[2]*1.1,2),yrang[1]-(yrang[2]-yrang[1])*.02, daynames[day_ind])
+    par(xpd=FALSE)
+    xrang=lims$W[day_ind,c(1,3)]
+    yrang=lims$W[day_ind,c(2,4)]
+    if(xrang[2]-xrang[1]>yrang[2]-yrang[1]){ # inserted from plot.flights2.
+      dif=((xrang[2]-xrang[1])-(yrang[2]-yrang[1]))
+      yrang[2] = yrang[2]+dif/2
+      yrang[1] = yrang[1]-dif/2
+    }else{
+      dif=((yrang[2]-yrang[1])-(xrang[2]-xrang[1]))
+      xrang[2] = xrang[2]+dif/2
+      xrang[1] = xrang[1]-dif/2    
+    }
+    global_length = max(xrang[2]-xrang[1], yrang[2]-yrang[1])
+    global_relative_length = 0.05
+    total_plot(mob_layer=mob_layer, textmat_layer=NA, textlocs_layer=textlocs_layer, callmat_layer=NA, calllocs_layer=calllocs_layer,
+               state_layer, xrang = xrang, yrang = yrang,
+               rectangle = lims$W[day_ind,], rect_lwd=.75, rect_col="gray", rect_lty=2,
+               addlegend=FALSE, title="Dynamic Local View")
+  }
+dev.off()
+
+}
+
+
+
+
+
+
+
+
+
+# # ### Convolution plots
+# plots_over_time = function(timestamps, unique_day_names, label, grid_mesh = 500){
+#   if(label == "Calls"){color = cerulean}else{color=vermillion}
+#   day_names = range(as.POSIXct(timestamps,tz=,origin="1970-01-01"))
+#   num_days = ceiling(as.numeric(max(day_names)-min(day_names)))
+#   
+#   plot(0,0,xlim=range(timestamps),col=NA,ylim=c(0,1), xaxt="n",yaxt="n",xlab="Days", ylab="Frequency", main = paste(label, "Frequency Over Time"))
+#   axis(1,at=seq(min(timestamps), max(timestamps), length.out=num_days), labels = 1:num_days)
+#   for(i in 1:length(timestamps))  lines(rep(timestamps[i],2), c(.6,.9),lwd=2,col=rgb(color[1],color[2],color[3],.2))
+#   kernel_width = (max(timestamps)-min(timestamps))/50
+#   frequencies = rep(NA, grid_mesh)
+#   grid = seq(min(timestamps),max(timestamps),length.out=grid_mesh)
+#   for(i in 1:grid_mesh)  frequencies[i] = sum(dnorm(timestamps,grid[i],kernel_width))
+#   lines(grid, frequencies/max(frequencies)*.5, lwd=2)
+#   
+#   
+#   times = as.POSIXct(timestamps,tz="",origin="1970-01-01") %>%
+#     as.character() %>%
+#     strsplit(., " ") %>%
+#     map(function(day_and_time){paste("1970-01-01", day_and_time[2], "EDT", sep=" ")}) %>%
+#     map(as.POSIXct) %>%
+#     map(as.numeric) %>%
+#     as.list() %>%
+#     do.call(rbind, .) %>%
+#     as.vector()
+#   grid = seq(min(times),max(times),length.out=grid_mesh)
+#   hours_of_day = c("12:00 AM", paste(seq(2,10,2),":00 AM",sep=""), "12:00 PM", paste(seq(2,10,2),":00 PM",sep=""), "12:00 AM")
+#   
+#   
+#   
+#   plot(0,0,xlim=18000+0:1*(24*60*60),col=NA,ylim=c(0,1),xaxt="n",yaxt="n",xlab="Time", ylab="Frequency", main=paste(label, "Times of Day"))
+#   axis(1, at=seq(0,24,2)*60*60+18000, label = hours_of_day)
+#   for(i in 1:length(times))  lines(rep(times[i],2), c(.6,.9),lwd=2,col=rgb(color[1],color[2],color[3],.2))
+#   kernel_width = 10000
+#   
+#   colors = rainbow(length(unique_day_names), start = 0, end= 2/3, alpha=.2)
+#   for(day_i in 1:length(unique_day_names)){
+#     frequencies = rep(NA, grid_mesh)
+#     times_subset = times[text_subsets[[unique_day_names[day_i]]]]
+#     for(i in 1:grid_mesh)  frequencies[i] = sum(dnorm(times_subset,grid[i],kernel_width))
+#     lines(grid, frequencies*1000, col=colors[day_i], lwd=3)
+#   }
+# }
+# 
+# pdf("Texts.pdf", width = 8, height=6)
+# par(cex=1.2)
+# plots_over_time(textmat[,"timestamp"], names(text_subsets), "Texts")
+# dev.off()
+# 
+# pdf("Calls.pdf", width = 8, height=6)
+# par(cex=1.2)
+# plots_over_time(callmat[,"timestamp"], names(call_subsets), "Calls")
+# dev.off()
+
+
+
+
+
+
+
