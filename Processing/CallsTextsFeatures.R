@@ -12,37 +12,6 @@ detach("package:plyr", unload=TRUE)
 #load("sz_patient.Rdata")
 setwd("C:/Users/Patrick/Desktop/schizophrenia_patients/x64sum6q") # change for each patient!  Of course, this can be standardized.
 
-# Create composite matrices
-
-file.exists("texts")
-textmat = c()
-text_files = list.files("texts")
-for(text_file in text_files)
-  textmat = rbind(textmat, data = read.csv(paste("texts/",text_file,sep=""),header=T))
-textmat[,1] = textmat[,1] / 1000
-textmat = textmat[,-2]
-
-file.exists("calls")
-callmat = c()
-call_files = list.files("calls")
-for(call_file in call_files)
-  callmat = rbind(callmat, data = read.csv(paste("calls/",call_file,sep=""),header=T))
-callmat[,1] = callmat[,1] / 1000
-callmat = callmat[,-2]
-
-file.exists("power_state")
-statemat = c()
-state_files = list.files("power_state")
-for(state_file in state_files)
-  statemat = rbind(statemat, data = read.csv(paste("power_state/",state_file,sep=""),header=T))
-statemat[,1] = statemat[,1] / 1000
-statemat = statemat[,-2]
-
-
-
-
-
-
 
 
 # Texts
