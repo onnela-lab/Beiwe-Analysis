@@ -14,10 +14,11 @@ source("C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Preprocessing
 fildir="C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Preprocessing/PreprocessingExample"
 ```
 
-Now we will run the `MobilityFeatures` function. This will
+Now we will run the `MobilityFeatures` function. This will:
+
 1. Process the raw GPS data by removing low-accuracy pings.
 2. Denoising the remaining pings by projecting to a 2D plane and then converting them into a sequence of flights and pauses. The result is referred to as a *mobility trace*.
-2. The mobility trace is stored in **Example.Rdata** and a set of meaningful mobility features, calculated for every day in the mobility trace, is also produced.
+3. The mobility trace is stored in **Example.Rdata** and a set of meaningful mobility features, calculated for every day in the mobility trace, is also produced.
 
 
 
