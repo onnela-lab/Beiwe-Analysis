@@ -1,6 +1,6 @@
 
-Just learning about markdown files here. Nothing to see.
-
+### Step-by-step example of Beiwe data preprocessing
+## GPS preprocessing
 
 ```
 source("C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Preprocessing/GPS_preprocessing.R")
