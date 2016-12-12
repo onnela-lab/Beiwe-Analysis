@@ -874,7 +874,7 @@ MobilityFeatures = function(filename,
     cat(qOKmsg,"\n")
     return(NULL)
   }
-  try(DailyMobilityPlots(mobmat,obj,tz,filename),silent=TRUE)
+  #try(DailyMobilityPlots(mobmat,obj,tz,filename),silent=TRUE)
   lsmf = list()
   lssigloc = list()
   for(repnum in 1:nreps){
