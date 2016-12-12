@@ -1,3 +1,5 @@
+# Demonstration producing study-wide data collection plots
+
 Before creating data collection/adherence plots for your study, the [GPS needs to be processed](https://github.com/onnela-lab/Beiwe-Analysis/blob/master/Preprocessing/PreprocessingExample/PreprocessingExample.md).
 
 The following demonstration will show how to create data collection plots for your study in R.
