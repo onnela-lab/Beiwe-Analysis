@@ -45,9 +45,9 @@ The `MobilityFeatures` function is then executed on each patient's data separate
 cat("\nProcessing GPS data for",length(SIDs),"subjects:\n\n")
 for(i in 1:length(SIDs)){
   cat(paste("Processing ID: ",SIDs[i]," (",i,"/",length(SIDs),")\n",sep=""))
-  fildir=paste(datadir,SIDs[i],"gps",sep="/")
-  if(file.exists(fildir)){
-    out=MobilityFeatures(SIDs[[i]],fildir,nreps=simnum)    
+  datadir=paste(fildir,SIDs[i],"gps",sep="/")
+  if(file.exists(datadir)){
+    out=MobilityFeatures(SIDs[[i]],datadir,nreps=simnum)    
   }else{
     cat("No GPS data found.\n")
   }
