@@ -21,3 +21,6 @@ The `fildir` and `plotname` variables are the only input required to create the 
 ```
 DataCollectionPlots(fildir,plotname)
 ```
+This will produce a plot for every patient in your study. An example such plot is shown below:
+
+![alt text](https://github.com/onnela-lab/Beiwe-Analysis/blob/master/Output/AdherencePlots/ExampleDataCollectionPlot.png "Logo Title Text 1")
