@@ -25,7 +25,7 @@ Now we will run the `MobilityFeatures` function. This will:
 mout=MobilityFeatures(filename,fildir)
 ```
 
-## GPS preprocessing for each patient in a study
+## GPS preprocessing for all patients in a study
 
 Store the directory name where all data in your study is located in the `fildir` variable. This folder should contain one subfolder for each patient, labelled by patient ID. Also, load the `BeiwePackageNameHere` package.
 
