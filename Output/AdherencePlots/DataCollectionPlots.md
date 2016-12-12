@@ -1,4 +1,4 @@
-Before creating data collection/adherence plots for your study, the GPS needs to be processed.
+Before creating data collection/adherence plots for your study, the [GPS needs to be processed](https://github.com/onnela-lab/Beiwe-Analysis/blob/master/Preprocessing/PreprocessingExample/PreprocessingExample.md).
 
 The following demonstration will show how to create data collection plots for your study in R.
 
@@ -17,3 +17,7 @@ The  `plotname` variable is the output file name that will contain the data coll
 plotname="DataCollectionPlot-12-12-16.pdf"
 ```
 
+The `fildir` and `plotname` variables are the only input required to create the data collection plots, which will be stored in `fildir`:
+```
+DataCollectionPlots(fildir,plotname)
+```
