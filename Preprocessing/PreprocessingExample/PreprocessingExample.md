@@ -1,6 +1,6 @@
 
 # Step-by-step example of Beiwe data preprocessing
-## GPS preprocessing
+## GPS preprocessing for a single patient
 
 First, find the directory containing your Beiwe data.
 
@@ -25,4 +25,33 @@ Now we will run the `MobilityFeatures` function. This will:
 mout=MobilityFeatures(filename,fildir)
 ```
 
+## GPS preprocessing for each patient in a study
+
+Store the directory name where all data in your study is located in the `fildir` variable. This folder should contain one subfolder for each patient, labelled by patient ID. Also, load the `BeiwePackageNameHere` package.
+
+```
+## library(BeiwePackageNameHere) \\ This will ultimately replace the source call that comes on th
+source("C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Preprocessing/GPS_preprocessing.R")
+fildir="C:/Users/Ian/Documents/Work/JP/Schizophrenia/Data"
+```
+
+The patient IDs are then taken from the subfolder names and stored in the `SIDs` variable.
+```
+SIDs=unlist(lapply(strsplit(list.dirs(fildir,recursive=FALSE),"/"),function(x) x[length(x)]))
+```
+
+The `MobilityFeatures` function is then executed on each patient's data separately. 
+```
+cat("\nProcessing GPS data for",length(SIDs),"subjects:\n\n")
+for(i in 1:length(SIDs)){
+  cat(paste("Processing ID: ",SIDs[i]," (",i,"/",length(SIDs),")\n",sep=""))
+  fildir=paste(datadir,SIDs[i],"gps",sep="/")
+  if(file.exists(fildir)){
+    out=MobilityFeatures(SIDs[[i]],fildir,nreps=simnum)    
+  }else{
+    cat("No GPS data found.\n")
+  }
+}
+```
+The `.rdata` files containing the processed data are stored in each the patient subfolders.
 
