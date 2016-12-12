@@ -873,7 +873,7 @@ MobilityFeatures = function(filename,
   if(qOKmsg!=""){
     cat(qOKmsg,"\n")
     return(NULL)
-  }
+  } =
   #try(DailyMobilityPlots(mobmat,obj,tz,filename),silent=TRUE)
   lsmf = list()
   lssigloc = list()
