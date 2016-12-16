@@ -1,12 +1,3 @@
-library(GPSmobility)
-library(stringr)
-library(plyr)
-library(pryr)
-library(dplyr)
-library(tidyr)
-library(purrr)
-detach("package:plyr", unload=TRUE)
-
 text_features = function(textmat){
   # input:  textmat, a processed array of texts
   # output: text_features, a processed array with text features

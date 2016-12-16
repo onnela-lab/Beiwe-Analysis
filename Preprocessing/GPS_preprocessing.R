@@ -1,6 +1,3 @@
-require(VGAM)
-
-
 # Function: GPS2MobMat
 # #### Arguments
 # filelist:  vector of cvs files containing GPS trace
@@ -873,7 +870,7 @@ MobilityFeatures = function(filename,
   if(qOKmsg!=""){
     cat(qOKmsg,"\n")
     return(NULL)
-  } 
+  } #=
   #try(DailyMobilityPlots(mobmat,obj,tz,filename),silent=TRUE)
   lsmf = list()
   lssigloc = list()
