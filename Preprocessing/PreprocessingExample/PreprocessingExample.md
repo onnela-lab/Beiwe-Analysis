@@ -1,18 +1,19 @@
 
 # Step-by-step example of Beiwe data preprocessing
-## GPS preprocessing
+## GPS preprocessing for a single patient
 
 First, find the directory containing your Beiwe data.
 
 ![alt text](https://github.com/onnela-lab/Beiwe-Analysis/blob/master/Preprocessing/PreprocessingExample/screencapfinddirectory.png "Logo Title Text 1")
 
-Store this directory name in the `fildir` variable. Pick a name for that will be used to label your output files and store it in the `filename` variable. Also, load the `BeiwePackageNameHere` package.
+Store this directory name in the `fildir` variable. Pick a name for that will be used to label your output files and store it in the `filename` variable. Also, load the `BeiwePackageNameHere` package. The `simnum` variable represents the number of imputations to perform.
 
 ```
 ## library(BeiwePackageNameHere) \\ This will ultimately replace the source call that comes on th
 source("C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Preprocessing/GPS_preprocessing.R")
 fildir="C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Preprocessing/PreprocessingExample"
 filename="Example"
+simnum=1
 ```
 
 Now we will run the `MobilityFeatures` function. This will:
@@ -25,4 +26,34 @@ Now we will run the `MobilityFeatures` function. This will:
 mout=MobilityFeatures(filename,fildir)
 ```
 
+## GPS preprocessing for all patients in a study
+
+Store the directory name where all data in your study is located in the `fildir` variable. This folder should contain one subfolder for each patient, labelled by patient ID. Also, load the `BeiwePackageNameHere` package.
+
+```
+## library(BeiwePackageNameHere) \\ This will ultimately replace the source call that comes on th
+source("C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Preprocessing/GPS_preprocessing.R")
+fildir="C:/Users/Ian/Documents/Work/JP/Schizophrenia/Data"
+```
+
+The patient IDs are then taken from the subfolder names and stored in the `SIDs` variable. The `simnum` variable represents the number of imputations to perform.
+```
+SIDs=unlist(lapply(strsplit(list.dirs(fildir,recursive=FALSE),"/"),function(x) x[length(x)]))
+simnum=1
+```
+
+The `MobilityFeatures` function is then executed on each patient's data separately. 
+```
+cat("\nProcessing GPS data for",length(SIDs),"subjects:\n\n")
+for(i in 1:length(SIDs)){
+  cat(paste("Processing ID: ",SIDs[i]," (",i,"/",length(SIDs),")\n",sep=""))
+  datadir=paste(fildir,SIDs[i],"gps",sep="/")
+  if(file.exists(datadir)){
+    out=MobilityFeatures(SIDs[[i]],datadir,nreps=simnum)    
+  }else{
+    cat("No GPS data found.\n")
+  }
+}
+```
+The `.rdata` files containing the processed data are stored in each the patient subfolders.
 

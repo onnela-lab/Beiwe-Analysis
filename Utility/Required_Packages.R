@@ -1,0 +1,11 @@
+library(MCMCpack)
+library(VGAM)
+library(stringr)
+library(plyr)
+library(pryr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(tibble)
+detach("package:plyr", unload=TRUE)
+
