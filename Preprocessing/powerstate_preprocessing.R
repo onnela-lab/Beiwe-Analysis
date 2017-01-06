@@ -8,6 +8,7 @@ powerstate_preprocessing = function(){
     statemat = rbind(statemat, data = read.csv(paste("power_state/",state_file,sep=""),header=T))
   statemat[,1] = statemat[,1] / 1000
   statemat = statemat[,-2]
+  statemat[,c("hours","days")] = hours(statemat[,"timestamp"])
     }else{
       statemat = NULL
     }

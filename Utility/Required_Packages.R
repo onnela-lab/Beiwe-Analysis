@@ -1,3 +1,5 @@
+library(Rcpp)
+library(RcppArmadillo)
 library(MCMCpack)
 library(VGAM)
 library(stringr)

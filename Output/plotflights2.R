@@ -1,6 +1,4 @@
-midcolumn_x = c(.07, .11)
-
-GPSlocation = function(time_of_interest, mobility_matrix){
+GPSlocation = function(time_of_interest, mobility_matrix,...){
   row = try(min(which((mobility_matrix[,"t0"] < time_of_interest) & (time_of_interest < mobility_matrix[,"t1"]))))
   if(row != Inf){# this function 
     code = mobility_matrix[row,"Code"]
@@ -20,7 +18,8 @@ GPSlocation = function(time_of_interest, mobility_matrix){
   else(return(NA))
 }
 
-GPSarrow = function(x, y, length = .1,
+GPSarrow = function(x, y,
+                    length = .1,
                     angle = 0,
                     arrowhead_at_end = TRUE,
                     solid_head = TRUE,
@@ -28,7 +27,9 @@ GPSarrow = function(x, y, length = .1,
                     arrow_thickness = .9,
                     arrowhead_length = .1,
                     solid_arrowhead_length = .2,
-                    arrow_width = .6){
+                    arrow_width = .6,
+                    xrang = xrang, yrang = yrang,...
+){
   arrowhead_length = arrowhead_length*length
   solid_arrowhead_length = solid_arrowhead_length*length
   arrow_narrowness = 2.3 + (3-2.3)*(1-arrow_width)
@@ -58,7 +59,7 @@ GPSarrow = function(x, y, length = .1,
 
 plot.flights2 <-
   function(mat,xrang=NULL,yrang=NULL,diminch=6,add2plot=FALSE,addscale = TRUE, addlegend=TRUE,
-           outfile=NULL,title=NULL, main_rectangle = NA){
+           outfile=NULL,title=NULL, main_rectangle = NA,...){
 
     #col24hour_v=c(c("#08306b","#08519c","#2171b5","#4292c6","#6baed6","#9ecae1","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"),rev(c("#08306b","#08519c","#2171b5","#4292c6","#6baed6","#9ecae1","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d")))
     col24hour_v=gray(seq(.85,.15,length.out=24))
@@ -137,8 +138,8 @@ plot.flights2 <-
         text(xleg2,yrang[1]+33*yincr,"<30 Min Pause",adj=0,cex=.5)
         text(xleg2,yrang[1]+35*yincr,"Calls",adj=0,cex=.5)
         text(xleg2,yrang[1]+37*yincr,"Texts",adj=0,cex=.5)
-        GPSarrow(xleg1,yrang[1]+35*yincr, arrowcolor = light_color(cerulean, ink_depth = .5),  length=(xrang[2]-xrang[1])*.025, arrow_thickness = 1.2, arrow_width = 1, solid_arrowhead_length = .35)
-        GPSarrow(xleg1,yrang[1]+37*yincr, arrowcolor = light_color(vermillion, ink_depth = .5),length=(xrang[2]-xrang[1])*.025, arrow_thickness = 1.2, arrow_width = 1, solid_arrowhead_length = .35)
+        GPSarrow(xleg1,yrang[1]+35*yincr, arrowcolor = light_color(cerulean, ink_depth = .5),  length=(xrang[2]-xrang[1])*.025, arrow_thickness = 1.2, arrow_width = 1, solid_arrowhead_length = .35,max_text_length=max_text_length, max_call_length=max_call_length,call_brightness=call_brightness,xrang = xrang, yrang = yrang)
+        GPSarrow(xleg1,yrang[1]+37*yincr, arrowcolor = light_color(vermillion, ink_depth = .5),length=(xrang[2]-xrang[1])*.025, arrow_thickness = 1.2, arrow_width = 1, solid_arrowhead_length = .35,max_text_length=max_text_length, max_call_length=max_call_length,call_brightness=call_brightness,xrang = xrang, yrang = yrang)
         points(mean(xleg_mid,xleg2),yrang[1]+39*yincr,cex=.5,pch=16, col = light_color(limegreen, 1))
         text(xleg2,yrang[1]+39*yincr,"Screen On/Off",adj=0,cex=.5)
         #text(xleg1,yrang[1]+32.3*yincr,"Pause\nDuration",adj=0,cex=.5)
@@ -171,7 +172,7 @@ plot.flights2 <-
     }
   }
 
-daily_subsets = function(mat, time_string = "t0", end_time_string = NA, tz=""){
+daily_subsets = function(mat, time_string = "t0", end_time_string = NA, tz="",...){
   curdate=strsplit(as.character(as.POSIXct(as.numeric(mat[1,time_string]),tz=tz,origin="1970-01-01"))," ")[[1]][1]
   curtime=strsplit(strsplit(as.character(as.POSIXct(as.numeric(mat[1,time_string]),tz=tz,origin="1970-01-01"))," ")[[1]][2],":")
   subsetinds_v = list()
@@ -229,11 +230,11 @@ hours = function(timestamps){ # converts timestamps into hour of the day.
   return(output)
 }
 
-#patient_names = c("ws535wyt","x64sum6q","v5k3vk1b","upgskgun","euvxbf3w","dske5c2t") #just restricted to patients with full data for now
-#setwd("C:/Users/Patrick/Desktop/schizophrenia_patients")
-
 total_plot = function(mob_layer, textmat_layer=NA, textlocs_layer=NA,callmat_layer=NA, calllocs_layer=NA,
-                      state_layer=NA, acc_layer = NA,rectangle = NA, rect_col = "black",
+                      state_layer=NA, xrang, yrang, acc_layer = NA, 
+                      global_length=NA, global_relative_length=NA, 
+                      max_text_length, max_call_length,
+                      rectangle = NA, rect_col = "black",
                       rect_lwd = 1.5, rect_lty = 1, second_arrow = TRUE,arrowhead_at_end = TRUE, solid_head=TRUE,
                       text_brightness=.5, call_brightness=.5,...){
   plot.flights2(mob_layer, ...)
@@ -249,7 +250,8 @@ total_plot = function(mob_layer, textmat_layer=NA, textlocs_layer=NA,callmat_lay
       GPSarrow(textlocs_layer[i,1], textlocs_layer[i,2],
                length = global_relative_length * global_length,
                angle=angle, arrowhead_at_end = arrowhead_at_end,
-               arrowcolor=light_color(color, text_brightness))
+               arrowcolor=light_color(color, text_brightness),
+               max_text_length=max_text_length, max_call_length=max_call_length,call_brightness=call_brightness,xrang = xrang, yrang = yrang)
     }}}
     if(length(unlist(textmat_layer))>0){if(sum(!is.na(textmat_layer))>0){
       for(i in 1:nrow(textmat_layer)){
@@ -257,7 +259,8 @@ total_plot = function(mob_layer, textmat_layer=NA, textlocs_layer=NA,callmat_lay
         GPSarrow(xrang[2]+(xrang[2]-xrang[1])*midcolumn_x[1],yrang[1]+(yrang[2]-yrang[1])*textmat_layer[i,"hours"]/24*inner_box_top, # pretty clunky.  But it get both arrows on!
                length = global_relative_length * global_length,
                angle=pi, arrowhead_at_end = arrowhead_at_end,solid_head = TRUE,
-               arrowcolor=light_color(color, text_brightness))
+               arrowcolor=light_color(color, text_brightness),
+               max_text_length=max_text_length, max_call_length=max_call_length,call_brightness=call_brightness,xrang = xrang, yrang = yrang)
         par(xpd=FALSE)
     }}}
   color = cerulean
@@ -274,7 +277,9 @@ total_plot = function(mob_layer, textmat_layer=NA, textlocs_layer=NA,callmat_lay
                length = global_relative_length * global_length,
                angle=angle, arrowhead_at_end = arrowhead_at_end,
                solid_head = solid_head,
-               arrowcolor=light_color(color, call_brightness))
+               arrowcolor=light_color(color, call_brightness),
+               max_text_length=max_text_length, max_call_length=max_call_length,call_brightness=call_brightness,
+               xrang = xrang, yrang = yrang)
     }}}      
     if(length(unlist(callmat_layer))>0){if(sum(!is.na(callmat_layer))>0){
       for(i in 1:nrow(callmat_layer)){
@@ -283,7 +288,8 @@ total_plot = function(mob_layer, textmat_layer=NA, textlocs_layer=NA,callmat_lay
                length = global_relative_length * global_length,
                angle=pi, arrowhead_at_end = arrowhead_at_end,
                solid_head = solid_head,
-               arrowcolor=light_color(color, call_brightness))
+               arrowcolor=light_color(color, call_brightness),
+               max_text_length=max_text_length, max_call_length=max_call_length,call_brightness=call_brightness)
       par(xpd=FALSE)
       }}}
   if(length(unlist(state_layer))>0){if(sum(!is.na(state_layer))>0){
