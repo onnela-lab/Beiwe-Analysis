@@ -29,4 +29,4 @@ Even after preprocessing, most analyses require basic steps before creating plot
 Once the data is processed, we arrive at the juicy part: plots and statistical analysis.  These functions take processed data in a specified format as inputs, and return highly specific ***outputs*** such as plots, models, or tests.  These functions should not contain any processing steps.
 
 ## Utility
-A great deal of functions call into the above categories, but some do not.  All other helper functions belong in **utility**.  Examples include **`R`** package dependencies, and global constants such as plotting colors.
+A great deal of functions call into the above categories, but some do not.  All other helper functions belong in ***utility***.  Examples include **`R`** package dependencies, and global constants such as plotting colors.
