@@ -19,5 +19,5 @@ vermillion  = c(.8,.25,.2)
 limegreen   = c(.35,1,0)
 
 sleep_col = rgb(.2,.2,.8)
-wake_col = rgb(.8,.2,.2)
+wake_col  = rgb(.8,.2,.2)
 

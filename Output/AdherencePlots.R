@@ -165,7 +165,7 @@ DataCollectionPlots = function(fildir,plotname){
     if(is.null(tmin) || is.null(tmax)){
       next
     }
-    xlimvals = c(-.2*(tmax-tmin)/86400,(tmax-tmin)/86400)
+    xlimvals = c(-.2*(tmax-tmin) / seconds_per_day,(tmax-tmin) / seconds_per_day)
     plot(NA,ylim=c(-1,nvals),xlim=xlimvals,bty="n",xaxt="n",yaxt="n",xlab="",ylab="",main="",asp=1)
     text(mean(xlimvals),nvals,paste("Subject ID:",SIDs[[k]]))
     for(j in 1:length(rowlabels)){
@@ -178,9 +178,9 @@ DataCollectionPlots = function(fildir,plotname){
     }
     ## survey answers
     for(i in 1:length(survey_IDs_v)){
-      for(j in 0:((tmax-tmin)/86400)){
+      for(j in 0:((tmax-tmin) / seconds_per_day)){
         if(length(which(names(surveydates_ls)==survey_IDs_v[i]))>0){
-          IDsurvey=which(round((as.numeric(as.POSIXct(surveydates_ls[[survey_IDs_v[i]]],origin="1970-01-01"))-tmin)/86400)==j)
+          IDsurvey=which(round((as.numeric(as.POSIXct(surveydates_ls[[survey_IDs_v[i]]],origin="1970-01-01"))-tmin) / seconds_per_day)==j)
           if(length(IDsurvey)>0){
             xval=j
             eps=.5
@@ -202,11 +202,11 @@ DataCollectionPlots = function(fildir,plotname){
     }
     ## add GPS data
     if(!is.null(gpsdates)){
-      gpsxvals=round((as.numeric(as.POSIXct(gpsdates,origin="1970-01-01"))-tmin)/86400)
+      gpsxvals=round((as.numeric(as.POSIXct(gpsdates,origin="1970-01-01"))-tmin) / seconds_per_day)
     }else{
       gpsxvals = NULL
     }
-    for(j in 0:((tmax-tmin)/86400)){
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+1
@@ -252,12 +252,12 @@ DataCollectionPlots = function(fildir,plotname){
       }
     }
     ## call duration
-    for(j in 0:((tmax-tmin)/86400)){
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+2
       if(!is.null(calldur_ls)){
-        calldurxvals=round((as.numeric(as.POSIXct(names(calldur_ls),origin="1970-01-01"))-tmin)/86400)
+        calldurxvals=round((as.numeric(as.POSIXct(names(calldur_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
       if(!is.null(calldur_ls) && length(which(calldurxvals==j))>0){
         secdur=calldur_ls[[names(calldur_ls)[which(calldurxvals==j)]]]
@@ -283,12 +283,12 @@ DataCollectionPlots = function(fildir,plotname){
       }
     }
     ## missed calls
-    for(j in 0:((tmax-tmin)/86400)){
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+3
       if(!is.null(callmis_ls)){
-        callmisxvals=round((as.numeric(as.POSIXct(names(callmis_ls),origin="1970-01-01"))-tmin)/86400)
+        callmisxvals=round((as.numeric(as.POSIXct(names(callmis_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
       if(!is.null(callmis_ls) && length(which(callmisxvals==j))>0){
         nummis=callmis_ls[[names(callmis_ls)[which(callmisxvals==j)]]]
@@ -314,12 +314,12 @@ DataCollectionPlots = function(fildir,plotname){
       }
     }
     ## number texts sent
-    for(j in 0:((tmax-tmin)/86400)){
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+4
       if(!is.null(texts_ls)){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin)/86400)
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
       if(!is.null(texts_ls) && length(which(textxvals==j))>0){
         numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
@@ -344,12 +344,12 @@ DataCollectionPlots = function(fildir,plotname){
       }
     }
     ## length texts sent
-    for(j in 0:((tmax-tmin)/86400)){
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+5
       if(!is.null(texts_ls)){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin)/86400)
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
       if(!is.null(texts_ls) && length(which(textxvals==j))>0){
         dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][3]
@@ -374,12 +374,12 @@ DataCollectionPlots = function(fildir,plotname){
       }
     }
     ## number texts received
-    for(j in 0:((tmax-tmin)/86400)){
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+6
       if(!is.null(texts_ls)){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin)/86400)      
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)      
       }
       if(!is.null(texts_ls) && length(which(textxvals==j))>0){
         numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][2]
@@ -404,12 +404,12 @@ DataCollectionPlots = function(fildir,plotname){
       }
     }
     ## length texts received
-    for(j in 0:((tmax-tmin)/86400)){
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+7
       if(!is.null(texts_ls)){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin)/86400)
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
       if(!is.null(texts_ls) && length(which(textxvals==j))>0){
         dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][4]
@@ -433,15 +433,15 @@ DataCollectionPlots = function(fildir,plotname){
         polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }
     }
-    for(j in 0:((tmax-tmin)/86400)){
-      tt=as.POSIXct(tmin+j*86400,origin="1970-01-01")
+    for(j in 0:((tmax-tmin) / seconds_per_day)){
+      tt=as.POSIXct(tmin+j*seconds_per_day,origin="1970-01-01")
       hr=strsplit(as.character(tt)," ")[[1]] 
       if(length(hr)>1 && hr[2]=="23:00:00"){
         tmin=tmin+3600
       }else if(length(hr)>1 && hr[2]=="01:00:00"){
         tmin=tmin-3600
       }
-      if(weekdays(as.POSIXct(tmin+j*86400,origin="1970-01-01"))=="Sunday"){
+      if(weekdays(as.POSIXct(tmin+j*seconds_per_day,origin="1970-01-01"))=="Sunday"){
         eps=.5
         lines(c(j+eps,j+eps),c(0+eps,nvals-bufferlines+eps),lwd=1.5,col="Black")
       }

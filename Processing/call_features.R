@@ -1,12 +1,3 @@
-library(GPSmobility)
-library(stringr)
-library(plyr)
-library(pryr)
-library(dplyr)
-library(tidyr)
-library(purrr)
-detach("package:plyr", unload=TRUE)
-    
 call_features = function(textmat){
   # input:  callmat, a processed array of calls
   # output: call_features, a processed array of calls features
