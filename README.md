@@ -1,7 +1,7 @@
 # Introduction
 `Beiwe-Analysis` is our GitHub code repository for analyzing Beiwe and collaborator data.  The idea is to help make study analysis as systematic and error-free as the data itself.  Some of this code references **`Python`** or **`C`**-related code for speed, but most of this code is in **`R`**, and is readily converted into an **`R`** package.  In the near future, we will provide a notebook example showing how to use these functions.
 
-This is largely an effort of Ian and Patrick, but we intend to include any other efforts as well.  These efforts are closely related to Matt's `beiwedata`, and we plan to merge our efforts in the future.
+So far this has been an effort of Ian and Patrick, but we intend to include the projects of the whole lab, with the goal of making our work public in the Fall.  These efforts are closely related to Matt's `beiwedata`, and we plan to merge our efforts in the future.
 
 # Table of Contents
 - [Overview](#Overview)
@@ -29,4 +29,4 @@ Even after preprocessing, most analyses require basic steps before creating plot
 Once the data is processed, we arrive at the juicy part: plots and statistical analysis.  These functions take processed data in a specified format as inputs, and return highly specific ***outputs*** such as plots, models, or tests.  These functions should not contain any processing steps.
 
 ## Utility
-A great deal of functions call into the above categories, but some do not.  All other helper functions belong in **utility**.  Examples include package dependencies, and global constants such as plotting colors.
+A great deal of functions call into the above categories, but some do not.  All other helper functions belong in **utility**.  Examples include **`R`** package dependencies, and global constants such as plotting colors.
