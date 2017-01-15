@@ -1,3 +1,79 @@
+GPS_preprocessing = function(patient_name,
+                             data_directory,
+                             ACCURACY_LIM=51, ### meters GPS accuracy
+                             ITRVL=10, ### seconds (data concatenation)
+                             tz="", ### time zone of data, defaults to current time zone
+                             CENTERRAD=200, ### meters radius from significant locations considered
+                             minpausedur=300,
+                             minpausedist=60,
+                             rad_fp=NULL,
+                             wid_fp=NULL
+){
+  outdir = file.path(paste(data_directory,patient_name,sep="/"),"preprocessed_data")
+  if(!file.exists(outdir)){
+    dir.create(outdir)
+  }  
+  outfilename =paste(outdir,paste("gps_preprocessed_",patient_name,".Rdata",sep=""),sep="/")
+  if(file.exists(outfilename)){
+    cat("GPS already preprocessed.\n")
+    return(NULL)
+  }
+  filelist <- list.files(path=paste(data_directory,patient_name,"gps",sep="/"),pattern = "\\.csv$",full.names=T)
+  if(length(filelist)==0){return(NULL)}
+  mobmatmiss=GPS2MobMat(filelist,itrvl=ITRVL,accuracylim=ACCURACY_LIM,r=rad_fp,w=wid_fp)
+  mobmat = GuessPause(mobmatmiss,mindur=minpausedur,r=minpausedist)
+  obj=InitializeParams(mobmat)
+  qOKmsg=MobmatQualityOK(mobmat,obj)
+  if(qOKmsg!=""){
+    cat(qOKmsg,"\n")
+    return(NULL)
+  }
+  save(file=outfilename,mobmat,mobmatmiss,obj)  
+}
+
+GPS_imputation = function(patient_name,
+                          data_directory,
+                          wtype="GLR",
+                          spread_pars=c(10,1),
+                          nreps=1 ### simulate missing data numer of times
+){
+  # Check to see if GPS has been processed
+  # IF so, load mobmat, and obj
+  predir = file.path(paste(data_directory,patient_name,sep="/"),"preprocessed_data",paste("gps_preprocessed_",patient_name,".Rdata",sep=""))
+  if(!file.exists(predir)){
+    cat("No preprocessed data.\n")
+    return(NULL)
+  }  
+  load(predir)
+  outdir = paste(data_directory,patient_name,"processed_data",sep="/")
+  if(!file.exists(outdir)){
+    dir.create(outdir)
+  }  
+  outfilename =paste(data_directory,patient_name,"processed_data",paste("gps_imputed_",patient_name,".Rdata",sep=""),sep="/")
+  mobmatsims = list()
+  objsims = list()
+  for(repnum in 1:nreps){
+    if(repnum==1){
+      cat("Sim #: 1")
+    }else if(repnum<=nreps-1){
+      cat(paste(" ",repnum,sep=""))
+    }else{
+      cat(paste(" ",nreps,"\n",sep=""))
+    }
+    mobmat2=SimulateMobilityGaps(mobmat,obj,wtype,spread_pars)
+    IDundef=which(mobmat2[,1]==3)
+    if(length(IDundef)>0){
+      mobmat2=mobmat2[-IDundef,]      
+    }
+    obj2=InitializeParams(mobmat2)
+    mobmatsims[[repnum]]=mobmat2
+    objsims[[repnum]]=obj2
+  }  
+  save(file=outfilename,mobmatsims,objsims)  
+}
+
+
+
 # Function: GPS2MobMat
 # #### Arguments
 # filelist:  vector of cvs files containing GPS trace
