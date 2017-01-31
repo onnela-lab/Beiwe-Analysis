@@ -10,7 +10,10 @@ simnum=1
 cat("\nProcessing GPS data for",length(SIDs),"subjects:\n\n")
 for(i in 1:length(SIDs)){
   cat(paste("Processing ID: ",SIDs[i]," (",i,"/",length(SIDs),")\n",sep=""))
+  # Preprocessing
   GPS_preprocessing(SIDs[i],data_directory)
+  # Processing
   GPS_imputation(SIDs[i],data_directory,nreps=simnum)
+  # Output
 }
 ```
