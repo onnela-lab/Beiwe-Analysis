@@ -47,7 +47,7 @@ DecomposeErrors = function(y,times=NULL,dft=2,tscale=10,mintotvals=7,minvaleach=
 # create time series with missingness
 p=10 # number of data streams
 m = 100 # number of consecutive time points
-pmis = .5 # proportion of values missing, selected at random
+pmis = 0 # proportion of values missing, selected at random
 times = 1:m
 ymat=matrix(NA,nrow=p,ncol=m)
 for(i in 1:p){
@@ -56,6 +56,7 @@ for(i in 1:p){
   ymat[i,]=y
 }
 
+ 
 
 out=DecomposeErrors(y,onesided=F)
 

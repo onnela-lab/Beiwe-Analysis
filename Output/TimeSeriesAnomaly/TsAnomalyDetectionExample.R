@@ -42,12 +42,24 @@ anomalyloc = 50
 ymat=matrix(NA,nrow=p,ncol=m)
 for(i in 1:p){
   y = 2*sin(2*pi*(1:m)/(2*m))+1*sin(2*pi*(1:m)/7) + rnorm(m)
+#  y = rnorm(m)
   y[anomalyloc] = y[anomalyloc]+7
   y[sample(1:m,floor(pmis*m))]=NA  
   ymat[i,]=y
 }
 out=AnomalyDetectionTS(ymat,B=1000)
 out$output[3,anomalyloc]  ## p-value for anomaly at anomalyloc
+plot(-log10(out$output[3,]))
+lines(c(0,m),rep(-log10(out$cutoff),2))
 out$cutoff ## p-value cutoff based on 0.05 FWER
 
 
+
+
+out=DecomposeErrors(ymat[3,],onesided=F)
+
+plot(times,y,type="l")
+(out$mu+out$s)[50]
+lines(times,out$mu,col="Red")
+lines(times,out$mu+out$s,col="Blue")
+lines(times,out$mu+out$s+out$eps,col="orange")
