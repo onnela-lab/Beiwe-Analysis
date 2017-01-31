@@ -68,7 +68,8 @@ GPS_imputation = function(patient_name,
     obj2=InitializeParams(mobmat2)
     mobmatsims[[repnum]]=mobmat2
     objsims[[repnum]]=obj2
-  }  
+  }
+  cat("\n")
   save(file=outfilename,mobmatsims,objsims)  
 }
 
@@ -946,11 +947,7 @@ MobilityFeatures = function(filename,
   if(qOKmsg!=""){
     cat(qOKmsg,"\n")
     return(NULL)
-<<<<<<< HEAD
   } 
-=======
-  } #=
->>>>>>> origin/master
   #try(DailyMobilityPlots(mobmat,obj,tz,filename),silent=TRUE)
   lsmf = list()
   lssigloc = list()
