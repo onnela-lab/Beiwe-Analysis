@@ -1,5 +1,5 @@
 GPS_preprocessing = function(patient_name,
-                             data_directory,
+                             homedir,
                              ACCURACY_LIM=51, ### meters GPS accuracy
                              ITRVL=10, ### seconds (data concatenation)
                              tz="", ### time zone of data, defaults to current time zone
@@ -9,7 +9,11 @@ GPS_preprocessing = function(patient_name,
                              rad_fp=NULL,
                              wid_fp=NULL
 ){
-  outdir = file.path(paste(data_directory,patient_name,sep="/"),"preprocessed_data")
+  outdir = file.path(homedir,"Preprocessed_data")
+  if(!file.exists(outdir)){
+    dir.create(outdir)
+  }  
+  outdir = file.path(paste(homedir,"Preprocessed_data",sep="/"),patient_name)
   if(!file.exists(outdir)){
     dir.create(outdir)
   }  
@@ -18,7 +22,7 @@ GPS_preprocessing = function(patient_name,
     cat("GPS already preprocessed.\n")
     return(NULL)
   }
-  filelist <- list.files(path=paste(data_directory,patient_name,"gps",sep="/"),pattern = "\\.csv$",full.names=T)
+  filelist <- list.files(path=paste(homedir,"Data",patient_name,"gps",sep="/"),pattern = "\\.csv$",full.names=T)
   if(length(filelist)==0){return(NULL)}
   mobmatmiss=GPS2MobMat(filelist,itrvl=ITRVL,accuracylim=ACCURACY_LIM,r=rad_fp,w=wid_fp)
   mobmat = GuessPause(mobmatmiss,mindur=minpausedur,r=minpausedist)
@@ -28,28 +32,32 @@ GPS_preprocessing = function(patient_name,
     cat(qOKmsg,"\n")
     return(NULL)
   }
-  save(file=outfilename,mobmat,mobmatmiss,obj)  
+  save(file=outfilename,mobmat,mobmatmiss,obj,tz,CENTERRAD,ITRVL)  
 }
 
 GPS_imputation = function(patient_name,
-                          data_directory,
+                          homedir,
                           wtype="GLR",
                           spread_pars=c(10,1),
                           nreps=1 ### simulate missing data numer of times
 ){
   # Check to see if GPS has been processed
   # IF so, load mobmat, and obj
-  predir = file.path(paste(data_directory,patient_name,sep="/"),"preprocessed_data",paste("gps_preprocessed_",patient_name,".Rdata",sep=""))
+  predir = file.path(paste(homedir,"Preprocessed_data",patient_name,sep="/"),paste("gps_preprocessed_",patient_name,".Rdata",sep=""))
   if(!file.exists(predir)){
     cat("No preprocessed data.\n")
     return(NULL)
   }  
   load(predir)
-  outdir = paste(data_directory,patient_name,"processed_data",sep="/")
+  outdir = paste(homedir,"Processed_data",sep="/")
   if(!file.exists(outdir)){
     dir.create(outdir)
   }  
-  outfilename =paste(data_directory,patient_name,"processed_data",paste("gps_imputed_",patient_name,".Rdata",sep=""),sep="/")
+  outdir = paste(homedir,"Processed_data",patient_name,sep="/")
+  if(!file.exists(outdir)){
+    dir.create(outdir)
+  }  
+  outfilename =paste(outdir,paste("gps_imputed_",patient_name,".Rdata",sep=""),sep="/")
   mobmatsims = list()
   objsims = list()
   for(repnum in 1:nreps){
@@ -68,6 +76,7 @@ GPS_imputation = function(patient_name,
     obj2=InitializeParams(mobmat2)
     mobmatsims[[repnum]]=mobmat2
     objsims[[repnum]]=obj2
+    
   }
   cat("\n")
   save(file=outfilename,mobmatsims,objsims)  
@@ -1230,6 +1239,8 @@ Hometime = function(mat,slout,CENTERRAD){
   }
   return(tottime/60)
 }
+
+
 
 ### ITRVL is the number of seconds that is collapsing interval width
 RadiusOfGyration=function(mat,ITRVL){

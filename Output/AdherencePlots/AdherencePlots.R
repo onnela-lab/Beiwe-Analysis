@@ -1,6 +1,8 @@
 
-#fildir="C:/Users/Ian/Documents/Work/JP/Schizophrenia/Data"
-#plotname="DataCollectionPlot-12-12-16.pdf"
+homedir = "C:/Users/Ian/Documents/Work/JP/Schizophrenia"
+plotname="DataCollectionPlot-12-12-16.pdf"
+
+DataCollectionPlots(homedir,plotname)
 
 light_color = function(color, ink_depth, ink_minimum = .2){
   if(is.na(ink_depth) || is.null(ink_depth)){ink_depth=0}else{  ink_depth = ink_depth*.8+.2}
@@ -9,10 +11,10 @@ light_color = function(color, ink_depth, ink_minimum = .2){
 }
 
 ## This file requires GPS_preprocessing to be run first.
-DataCollectionPlots = function(fildir,plotname){  
+DataCollectionPlots = function(homedir,plotname){  
   SIDs=lapply(strsplit(list.dirs(fildir,recursive=FALSE),"/"),function(x) x[length(x)])
   survey_IDs_v=c()
-  
+  fildir = paste(homedir,"Data",sep="/")
   tmin_glob=10^10
   tmax_glob=0
   maxdur = 0
@@ -25,16 +27,19 @@ DataCollectionPlots = function(fildir,plotname){
     gpsvals=NULL
     surveydates_ls=NULL
     ## read in GPS missing data dates and amounts
-    filname=paste(fildir,SIDs[[i]],"gps",paste("MobFeatMat_",SIDs[[i]],".txt",sep=""),sep="/")
+    #filname=paste(fildir,SIDs[[i]],"gps",paste("MobFeatMat_",SIDs[[i]],".txt",sep=""),sep="/")
+    filname=paste(homedir,"Processed_data",SIDs[[i]],paste("MobFeatures_",SIDs[[i]],".Rdata",sep=""),sep="/")
     if(file.exists(filname)){
+      load(filname)
+      mobmat = data.frame(outmat,stringsAsFactors=FALSE)
       gpsvals=list()
-      mobmat=read.table(filname,header=T)
-      gpsvals[['gpsmis']]=mobmat$MinsMissing
-      gpsvals[['gpsht']]=mobmat$Hometime
-      gpsvals[['gpsdt']]=mobmat$DistTravelled
-      gpsvals[['gpsmhd']]=mobmat$MaxHomeDist
-      gpsvals[['gpsslv']]=mobmat$SigLocsVisited
-      gpsvals[['gpsrtn']]=mobmat$CircdnRtn
+      #mobmat=read.table(filname,header=T)
+      gpsvals[['gpsmis']]=as.numeric(mobmat$MinsMissing)
+      gpsvals[['gpsht']]=as.numeric(mobmat$Hometime)
+      gpsvals[['gpsdt']]=as.numeric(mobmat$DistTravelled)
+      gpsvals[['gpsmhd']]=as.numeric(mobmat$MaxHomeDist)
+      gpsvals[['gpsslv']]=as.numeric(mobmat$SigLocsVisited)
+      gpsvals[['gpsrtn']]=as.numeric(mobmat$CircdnRtn)
       gpsdates=as.character(mobmat$Date)
       tmin=min(as.numeric(as.POSIXct(gpsdates,origin="1970-01-01")))
       tmax=max(as.numeric(as.POSIXct(gpsdates,origin="1970-01-01")))
@@ -156,8 +161,7 @@ DataCollectionPlots = function(fildir,plotname){
   bufferlines=3
   nvals=length(survey_IDs_v)+1+1+6+4+bufferlines
   
-  
-  pdf(paste(fildir,plotname,sep="/"),width=plotw,height=ploth)
+  pdf(paste(homedir,"Output",plotname,sep="/"),width=plotw,height=ploth)
   
   for(k in 1:length(SIDs)){
     par(mai=c(0,0,0,0))
@@ -325,6 +329,7 @@ DataCollectionPlots = function(fildir,plotname){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+4
+      if(length(texts_ls)==0){texts_ls=NULL}
       if(!is.null(texts_ls)){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin)/86400)
       }
