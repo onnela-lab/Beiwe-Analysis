@@ -43,6 +43,17 @@ with open(acc_filename, "w") as F:
             sd_line = " ".join(to_write.split(",")[:3]+[str(round(i,3)) for i in sd_xyz])
             F.write(sd_line + '\n')
 
+with open("buffer.txt", "w") as F:
+    with open(acc_filename, "r") as G:
+        for line in G.readlines():
+            if len(line.split(" ")) == 6:
+                F.write(line)
+
+os.remove(acc_filename)
+os.rename("buffer.txt", acc_filename)
+			
+			
+			
 with open(pow_filename, "w") as F:
     F.write('timestamp UTC_time segment screen_on_events\n')
     filenames = os.listdir(data_filepath+"/"+patient+"/power_state")
@@ -69,5 +80,13 @@ with open(pow_filename, "w") as F:
             to_write = to_write + " " + "-".join(date_and_time)
             F.write(to_write+" "+str(count) + '\n')
 
+with open("buffer.txt", "w") as F:
+    with open(pow_filename, "r") as G:
+        for line in G.readlines():
+            if len(line.split(" ")) == 6:
+                F.write(line)
+
+os.remove(pow_filename)
+os.rename("buffer.txt", pow_filename)
             
             
