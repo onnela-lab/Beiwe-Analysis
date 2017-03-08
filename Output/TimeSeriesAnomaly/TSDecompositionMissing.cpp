@@ -442,16 +442,19 @@ NumericVector DecomposeErrorsWeeklySeasonality(NumericVector y, NumericVector t,
 
 
 
+// /*** R
+// #DecomposeErrorsWeeklySeasonality(rnorm(100),1:100,2,5)
+// #HotellingsTS(rbind(0:4,0:4),TRUE)
+// #missprob=.2
+// #mvndat = t(rmvnorm(10,mean=c(0,0),sigma=rbind(c(1,.2),c(.2,1))))
+// #mvndat[sample(1:length(mvndat),floor(length(mvndat)*missprob))]=NA
+// #epsmat = matrix(NA,nrow=nrow(mvndat),ncol=ncol(mvndat))
+// #for(i in 1:nrow(epsmat)){
+//   #epsmat[i,]=DecomposeErrors(mvndat[i,],onesided=FALSE)$eps
+// #}
+// #minp_v = MinpDistribution(epsmat,1,TRUE)
+// #hist(minp_v,breaks=40)
+// */
+
 /*** R
-#DecomposeErrorsWeeklySeasonality(rnorm(100),1:100,2,5)
-#HotellingsTS(rbind(0:4,0:4),TRUE)
-#missprob=.2
-#mvndat = t(rmvnorm(10,mean=c(0,0),sigma=rbind(c(1,.2),c(.2,1))))
-#mvndat[sample(1:length(mvndat),floor(length(mvndat)*missprob))]=NA
-#epsmat = matrix(NA,nrow=nrow(mvndat),ncol=ncol(mvndat))
-#for(i in 1:nrow(epsmat)){
-  #epsmat[i,]=DecomposeErrors(mvndat[i,],onesided=FALSE)$eps
-#}
-#minp_v = MinpDistribution(epsmat,1,TRUE)
-#hist(minp_v,breaks=40)
 */

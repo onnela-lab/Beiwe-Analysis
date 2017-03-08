@@ -4,6 +4,8 @@ library(Matrix)
 
 Rcpp::sourceCpp('C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis/Output/TimeSeriesAnomaly/TSDecompositionMissing.cpp')
 
+
+
 DecomposeErrors = function(y,times=NULL,dft=2,tscale=10,mintotvals=7,minvaleach=2,onesided=FALSE,buffer=.2){
   if(is.null(times)){
     times = 1:length(y)
@@ -24,27 +26,14 @@ AnomalyDetectionTS = function(mat,B=1000,onesided=F,nonparam=T,ALPHA=0.05){
   }
   minp_v = MinpDistribution(epsmat,B,nonparam)
   x=HotellingsTS(epsmat,TRUE)
-  cutoff=quantile(minp_v,ALPHA)
+  cutoff=min(ALPHA,quantile(minp_v,ALPHA))
   IDanomaly=which(x[3,]<cutoff)
   return(list('IDanomaly'=IDanomaly,'cutoff'=cutoff,'epsmat'=epsmat,'output'=x,'minp_v'=minp_v))
 }
 
 
-### Example:
-
-
-homedir = "C:/Users/Ian/Documents/Work/JP/Schizophrenia"
-ID = "vh7ab23d"; IDhosp = 42
-ID = "ety2hu13"; IDhosp = 38
-
-
-filename="FeatureMatrixCLEAN2REPSBACKCOMBINED.txt"
-ID = "vh7ab23d"
-ID = "euvxbf3w"
-homedir="C:/Users/Ian/Documents/Work/JP/Schizophrenia"
-vertmarks = c("2017-01-26")
-AnomalyDetectionPlot(homedir,filename,ID,vertmarks)
-AnomalyDetectionPlot = function(homedir,filename,ID,vertmarks=NULL){
+AnomalyDetectionPlot = function(homedir,filename,ID,Nsurveys,outfiletag="",NoSurvey=FALSE,vertmarks=NULL){
+  Nmobfeats=15
   dat = read.table(paste(homedir,"Processed_data",filename,sep="/"),header=T,stringsAsFactors=F)
   rIDs=which(dat$IID==ID)
   y = dat[rIDs,]
@@ -52,15 +41,38 @@ AnomalyDetectionPlot = function(homedir,filename,ID,vertmarks=NULL){
   if(!file.exists(outdir)){
     dir.create(outdir)
   }  
+  if(nrow(y)<4){
+    cat(" Not enough data")
+    return(NULL)
+  }
+  y = y[c(-1,-nrow(y)),]
+  fvar=apply(y[,3:ncol(y)],2,function(xx) var(xx,na.rm=T))
+  fext=apply(y[,3:ncol(y)],2,function(xx) length(which(!is.na(xx))))
+  IDrm=unique(c(which(is.na(fvar)),which(fvar==0),which(fext<3)))+2
+  Nsurvrm=length(which(IDrm<=Nsurveys+2))
+  Nmobrm=length(which(IDrm<=Nmobfeats+Nsurveys+2))-Nsurvrm
+  Nsocfeats=ncol(y)-Nmobfeats-Nsurveys-2-(length(IDrm)-Nsurvrm-Nmobrm)
+  Nsurveys=Nsurveys-Nsurvrm
+  Nmobfeats=Nmobfeats-Nmobrm
+  if(length(IDrm)>0){
+    y = y[,-IDrm]
+  }
+  if(Nsocfeats+Nsurveys+Nmobfeats==0){
+    cat(" Not enough data")
+    return(NULL)
+  }
   for(i in 1:3){
     if(i==1){
-      out=AnomalyDetectionTS(t(data.matrix(y[,3:8])),B=1000); DTYPE="Surveys" #surveys only
+      if(NoSurvey || Nsurveys==0){next}
+      out=AnomalyDetectionTS(t(data.matrix(y[,3:(3+Nsurveys-1)])),B=1000); DTYPE="Surveys" #surveys only
     }else if(i==2){
-      out=AnomalyDetectionTS(t(data.matrix(y[,9:23])),B=1000); DTYPE="Mobility" #mobility only
+      if(Nmobfeats==0){next}
+      out=AnomalyDetectionTS(t(data.matrix(y[,(3+Nsurveys):(3+Nsurveys+Nmobfeats-1)])),B=1000); DTYPE="Mobility" #mobility only
     }else{
-      out=AnomalyDetectionTS(t(data.matrix(y[,24:ncol(y)])),B=1000); DTYPE="Sociability" #sociability only
+      if(Nsocfeats==0){next}
+      out=AnomalyDetectionTS(t(data.matrix(y[,(3+Nsurveys+Nmobfeats):ncol(y)])),B=1000); DTYPE="Sociability" #sociability only
     }
-    png(paste(homedir,"Output",ID,paste("AnomalyDetection",DTYPE,"-",ID,".png",sep=""),sep="/"),width=6,height=5,units="in",res=300)
+    png(paste(homedir,"Output",ID,paste("AnomalyDetection",DTYPE,"-",outfiletag,"-",ID,".png",sep=""),sep="/"),width=6,height=5,units="in",res=300)
     par(mai=c(1,.6,.4,.1))
     par(mgp=c(1.7,.6,0))
     plot(as.numeric(as.POSIXct(y[,2])),-log10(out$output[3,]),xaxt="n",xlab="",ylab=expression(-log[10](p)),pch=16,main=paste("Anomaly Detection: ",DTYPE,sep=""))
@@ -80,42 +92,12 @@ AnomalyDetectionPlot = function(homedir,filename,ID,vertmarks=NULL){
 
 
 
-testmat = out$output
-colnames(testmat)=y[,2]
 
 
+y = c(1,1,1,NA,NA,2,5,1,0,NA,2,NA,3)
+out=DecomposeErrors(y)
 
-INDplot=8
-plot(as.numeric(as.POSIXct(y[,2])),y[,INDplot],ylim=c(0,3),xaxt="n",xlab="",ylab=names(y)[INDplot])
-axis(1,at=as.numeric(as.POSIXct(y[,2])),labels=y[,2],las=2)
-lines(rep(as.numeric(as.POSIXct(y[42,2])),2),c(0,3),col="Red")
-# create time series with missingness
-# p=3 # number of data streams
-# m = 200 # number of consecutive time points
-# pmis = 0 # proportion of values missing, selected at random
-# times = 1:m
-# anomalyloc = 50
-# ymat=matrix(NA,nrow=p,ncol=m)
-# for(i in 1:p){
-#   y = 2*sin(2*pi*(1:m)/(2*m))+1*sin(2*pi*(1:m)/7) + rnorm(m)
-# #  y = rnorm(m)
-#   y[anomalyloc] = y[anomalyloc]+7
-#   y[sample(1:m,floor(pmis*m))]=NA  
-#   ymat[i,]=y
-# }
-# out=AnomalyDetectionTS(ymat,B=1000)
-# out$output[3,anomalyloc]  ## p-value for anomaly at anomalyloc
-# plot(-log10(out$output[3,]))
-# lines(c(0,m),rep(-log10(out$cutoff),2))
-# out$cutoff ## p-value cutoff based on 0.05 FWER
-# 
-# 
-# 
-# 
-# out=DecomposeErrors(ymat[3,],onesided=F)
-# 
-# plot(times,y,type="l")
-# (out$mu+out$s)[50]
-# lines(times,out$mu,col="Red")
-# lines(times,out$mu+out$s,col="Blue")
-# lines(times,out$mu+out$s+out$eps,col="orange")
+plot(y,ylim=c(-2,5))
+points(out$mu,col="Red")
+points(out$s,col="blue")
+points(out$eps,col="green")

@@ -70,6 +70,8 @@ PatientTrajectoriesPlots = function(pltname,y,X,dat,surveylab=NULL,MMH=1400,MML=
 # outdir = "C:/Users/Ian/Documents/Work/JP/Schizophrenia/Output"
 # PatientTrajectories(featurefile,outdir)
 PatientTrajectories = function(featurefile,outdir,pltname=NULL,inds=NULL,labels=NULL){
+  MinsMissingCutLOW=1200
+  MinsMissingCutHIGH=1440
   if(!file.exists(outdir)){
     dir.create(outdir)
   }
