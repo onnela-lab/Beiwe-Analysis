@@ -1,4 +1,4 @@
-surveys_preprocessing = function(data_filepath, patient_name){
+surveys_preprocessing = function(patient_name, ...){
   survey_data = list()
   surveys_data_filepath = paste(data_filepath, patient_name, "survey_answers",sep="/")
   if(file.exists(surveys_data_filepath)){
@@ -19,8 +19,8 @@ surveys_preprocessing = function(data_filepath, patient_name){
         survey_data[[specific_survey_filepath]] = specific_survey_data
       }
     }
-  }
   survey_data = do.call(rbind, survey_data)
   rownames(survey_data) = seq(nrow(survey_data))
-  return(survey_data)
+  saveRDS(survey_data, paste(output_filepath, "/Preprocessed_Data/Individual/",patient_name, "/survey_data.rds",sep=""))
+  }
 }

@@ -1,13 +1,15 @@
 data_quality_plotting = function(output_filepath, counts, coverage, stream, frequency, pulse_duration, break_duration){
   par(mgp=c(2.5,1,0),cex.main=1.2,cex.lab=1.2)
   
+  patients = counts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character %>% sort
+  colors = cols(length(patients),transparency=1-light_alpha)
+  person_colors = colors[counts %>% data.frame %>% dplyr::select(patient) %>% unlist %>% as.numeric]
+  names = counts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character
+  
   seconds_per_day = 60*60*24
   x_range = c(min(unlist(counts["zeroed"])), round(max(unlist(counts["zeroed"]))*1.3))
 
   pdf(output_filepath,width=8,height=6)
-  
-  light_alpha = .7
-  line_col = rgb(.3,.3,.3)
   
   plot(unlist(counts["zeroed"]),log10(1+unlist(counts["count"])),col=NA,yaxt = "n",ylim=c(0,5),xlim=x_range,
        xlab="Day",ylab="Number of Pulses",main=paste("Number of Pulses Per Day"," (",stream,")",sep=""))

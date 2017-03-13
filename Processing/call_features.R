@@ -59,7 +59,7 @@ call_features = function(textmat){
                            incoming_calls, incoming_calllengths, call_indegree,
                            call_reciprocity, call_responsiveness)
 
-  call_features = Reduce(inner_join, call_feature_list) # reduces each feature to days for which data is available.
+  call_features = Reduce(full_join, call_feature_list) # reduces each feature to days for which data is available.
   # call_features[,"outgoing_calls"]/call_features[,"incoming_calls"]
   call_features = data.frame(call_features)
   return(call_features)

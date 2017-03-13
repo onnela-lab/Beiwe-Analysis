@@ -1,17 +1,16 @@
-calls_preprocessing = function(){
-  # input: none
-  # output: matrix consisting of the calls for all patients and UNIX time stamps in seconds. (this standard should probably be changed.)
-  if(file.exists("calls")){
-    callmat = c()
-    call_files = list.files("calls")
-    for(call_file in call_files)
-      callmat = rbind(callmat, data = read.csv(paste("calls/",call_file,sep=""),header=T))
-    callmat[,1] = callmat[,1] / 1000
-    callmat = callmat[,-2]
-  }else{
-    callmat = NULL
+calls_preprocessing = function(patient_name, ...){
+  callmat = NULL
+  calls_filename = paste(data_filepath,patient_name,"calls",sep="/")
+  if(file.exists(calls_filename)){
+    call_files = list.files(calls_filename)
+    if(length(call_files) > 0){
+		callmat = c()
+		for(call_file in call_files)
+			callmat = rbind(callmat, data = read.csv(paste(calls_filename,"/",call_file,sep=""),header=T))
+		callmat[,"timestamp"] = callmat[,"timestamp"] / 1000
+		callmat = callmat[,-2]
+		callmat[,c("hours","days")] = hours(callmat[,"timestamp"])
+    }
   }
-  return(callmat)
+  saveRDS(callmat, paste(output_filepath, "/Preprocessed_Data/Individual/",patient_name, "/call_data.rds",sep=""))
 }
-
-  

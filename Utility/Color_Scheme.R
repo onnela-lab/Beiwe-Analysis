@@ -21,3 +21,9 @@ limegreen   = c(.35,1,0)
 sleep_col = rgb(.2,.2,.8)
 wake_col  = rgb(.8,.2,.2)
 
+light_alpha = 0.7
+
+
+
+
+

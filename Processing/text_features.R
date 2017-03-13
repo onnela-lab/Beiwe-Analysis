@@ -59,7 +59,7 @@ text_features = function(textmat){
                            incoming_texts, incoming_textlengths, text_indegree,
                            text_reciprocity, text_responsiveness)
 
-  text_features = Reduce(inner_join, text_feature_list) # reduces each feature to days for which data is available.
+  text_features = Reduce(full_join, text_feature_list) # reduces each feature to days for which data is available.
   text_features = data.frame(text_features)
   # text_features[,"outgoing_texts"]/text_features[,"incoming_texts"]
   return(text_features)

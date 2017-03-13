@@ -2,14 +2,11 @@ import os, sys, math, time
 import pandas as pd, numpy as np
 
 data_filepath = sys.argv[1]#"C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Data/2017.01.09"
-output_filepath = data_filepath + "/output"
-stream = sys.argv[2]
-milliseconds = int(sys.argv[3]) # 30000
+output_filepath = sys.argv[2]
+stream = sys.argv[3]
+milliseconds = int(sys.argv[4]) # 30000
 
 patients = [patient for patient in os.listdir(data_filepath) if "." not in patient]
-
-if not os.path.exists(output_filepath):
-    os.mkdir(output_filepath)
 
 def find_changes(G, patient, timestamps, UTCs, change_val):
     change = np.where(np.diff(timestamps)>change_val)[0] + 1 # indeces of the times

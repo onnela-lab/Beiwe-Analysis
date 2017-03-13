@@ -1,5 +1,4 @@
 GPS_preprocessing = function(patient_name,
-                             homedir,
                              ACCURACY_LIM=51, ### meters GPS accuracy
                              ITRVL=10, ### seconds (data concatenation)
                              tz="", ### time zone of data, defaults to current time zone
@@ -7,79 +6,99 @@ GPS_preprocessing = function(patient_name,
                              minpausedur=300,
                              minpausedist=60,
                              rad_fp=NULL,
-                             wid_fp=NULL
+                             wid_fp=NULL,
+							 verbose = TRUE,
+                             ...
 ){
-  outdir = file.path(homedir,"Preprocessed_data")
-  if(!file.exists(outdir)){
-    dir.create(outdir)
-  }  
-  outdir = file.path(paste(homedir,"Preprocessed_data",sep="/"),patient_name)
-  if(!file.exists(outdir)){
-    dir.create(outdir)
-  }  
-  outfilename =paste(outdir,paste("gps_preprocessed_",patient_name,".Rdata",sep=""),sep="/")
-  if(file.exists(outfilename)){
-    cat("GPS already preprocessed.\n")
-    return(NULL)
+  patient_output_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+  patient_output_filename = paste(patient_output_filepath, "/gps_preprocessed.rds",sep="")
+  if(file.exists(patient_output_filename)){
+    if(verbose) cat("GPS already preprocessed.\n")
+  }else{
+    filelist <- list.files(path=paste(data_filepath,patient_name,"gps",sep="/"),pattern = "\\.csv$",full.names=T)
+    if(length(filelist)==0){return(NULL)}
+    mobmatmiss=GPS2MobMat(patient_name, filelist,itrvl=ITRVL,accuracylim=ACCURACY_LIM,r=rad_fp,w=wid_fp)
+    mobmat = GuessPause(mobmatmiss,mindur=minpausedur,r=minpausedist)
+    obj=InitializeParams(mobmat)
+    qOKmsg=MobmatQualityOK(mobmat,obj)
+    if(qOKmsg!=""){
+      if(verbose) cat(qOKmsg,"\n")
+      return(NULL)
+    }else{
+      saveRDS(list(mobmat,mobmatmiss,obj,tz,CENTERRAD,ITRVL),
+              patient_output_filename)
+    }
   }
-  filelist <- list.files(path=paste(homedir,"Data",patient_name,"gps",sep="/"),pattern = "\\.csv$",full.names=T)
-  if(length(filelist)==0){return(NULL)}
-  mobmatmiss=GPS2MobMat(filelist,itrvl=ITRVL,accuracylim=ACCURACY_LIM,r=rad_fp,w=wid_fp)
-  mobmat = GuessPause(mobmatmiss,mindur=minpausedur,r=minpausedist)
-  obj=InitializeParams(mobmat)
-  qOKmsg=MobmatQualityOK(mobmat,obj)
-  if(qOKmsg!=""){
-    cat(qOKmsg,"\n")
-    return(NULL)
-  }
-  save(file=outfilename,mobmat,mobmatmiss,obj,tz,CENTERRAD,ITRVL)  
 }
 
-GPS_imputation = function(patient_name,
-                          homedir,
-                          wtype="GLR",
-                          spread_pars=c(10,1),
-                          nreps=1 ### simulate missing data numer of times
+GPS_imputation_and_features = function(patient_name,
+                                       automatic_preprocessing = FALSE,
+                                       wtype="GLR",
+                                       spread_pars=c(10,1),
+                                       nreps=1, ### simulate missing data numer of times
+									   verbose = TRUE,
+                                       ...
 ){
+  patient_output_filepath       = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+  patient_preprocessed_filename = paste(patient_output_filepath, "/gps_preprocessed.rds",sep="")
+  patient_output_filename       = paste(patient_output_filepath, "/gps_imputed.rds",sep="")
   # Check to see if GPS has been processed
   # IF so, load mobmat, and obj
-  predir = file.path(paste(homedir,"Preprocessed_data",patient_name,sep="/"),paste("gps_preprocessed_",patient_name,".Rdata",sep=""))
-  if(!file.exists(predir)){
-    cat("No preprocessed data.\n")
-    return(NULL)
-  }  
-  load(predir)
-  outdir = paste(homedir,"Processed_data",sep="/")
-  if(!file.exists(outdir)){
-    dir.create(outdir)
-  }  
-  outdir = paste(homedir,"Processed_data",patient_name,sep="/")
-  if(!file.exists(outdir)){
-    dir.create(outdir)
-  }  
-  outfilename =paste(outdir,paste("gps_imputed_",patient_name,".Rdata",sep=""),sep="/")
-  mobmatsims = list()
-  objsims = list()
-  for(repnum in 1:nreps){
-    if(repnum==1){
-      cat("Sim #: 1")
-    }else if(repnum<=nreps-1){
-      cat(paste(" ",repnum,sep=""))
-    }else{
-      cat(paste(" ",nreps,"\n",sep=""))
+
+  
+  if(!file.exists(patient_preprocessed_filename)){
+    if(verbose) cat("No preprocessed data.\n")
+    if(automatic_preprocessing){
+      if(verbose) cat("Preprocessing before proceeding...\n")
+      GPS_preprocessing(patient_name)
     }
-    mobmat2=SimulateMobilityGaps(mobmat,obj,wtype,spread_pars)
-    IDundef=which(mobmat2[,1]==3)
-    if(length(IDundef)>0){
-      mobmat2=mobmat2[-IDundef,]      
-    }
-    obj2=InitializeParams(mobmat2)
-    mobmatsims[[repnum]]=mobmat2
-    objsims[[repnum]]=obj2
-    
   }
-  cat("\n")
-  save(file=outfilename,mobmatsims,objsims)  
+  if(file.exists(patient_preprocessed_filename)){
+  if(file.exists(patient_output_filename)){
+    if(verbose) cat("Already imputed.\n")
+  }else{
+    if(verbose) cat("Imputing...\n")
+    preprocessed = readRDS(patient_preprocessed_filename)
+    
+    lsmf = list()
+    lssigloc = list()
+    for(repnum in 1:nreps){
+      if(repnum==1){
+        if(verbose) cat("Sim #: 1")
+      }else if(repnum<=nreps-1){
+        if(verbose) cat(paste(" ",repnum,sep=""))
+      }else{
+        if(verbose) cat(paste(" ",nreps,"\n",sep=""))
+      }
+      out3=SimulateMobilityGaps(mobmat,obj,wtype,spread_pars)
+      IDundef=which(out3[,1]==3)
+      if(length(IDundef)>0){
+        out3=out3[-IDundef,]      
+      }
+      obj3=InitializeParams(out3)
+      out_GMFM=GetMobilityFeaturesMat(out3,obj3,mobmatmiss,tz,CENTERRAD,ITRVL)
+      lsmf[[repnum]]=out_GMFM[[1]]
+      lssigloc[[repnum]]=out_GMFM[[2]]
+    }
+    if(verbose) cat("\n\n")
+    if(length(lsmf)!=0){
+      featavg = lsmf[[1]]
+      if(nreps>1){
+        for(i in 2:nreps){
+          featavg=featavg+lsmf[[i]]
+        }    
+        featavg=featavg/nreps
+      }    
+      outmat = cbind(rownames(featavg),featavg)
+      colnames(outmat)=c("Date",colnames(featavg))
+      write.table(outmat,paste(patient_output_filepath,"/MobFeatMat.txt",sep=""),quote=F,col.names=T,row.names=F,sep="\t")
+    }else{
+      featavg=NULL
+    }
+    saveRDS(list(featsims=lsmf,siglocsims=lssigloc,featavg=featavg),
+            patient_output_filename)
+    }
+  }
 }
 
 
@@ -98,7 +117,7 @@ GPS_imputation = function(patient_name,
 #           3=unclassified
 #           4=missing data
 
-GPS2MobMat = function(filelist,itrvl=10,accuracylim=51,r=NULL,w=NULL,tint_m=NULL,tint_k=NULL){
+GPS2MobMat = function(patient_name, filelist,itrvl=10,accuracylim=51,r=NULL,w=NULL,tint_m=NULL,tint_k=NULL,...){
   if(is.null(r)){
     r=sqrt(itrvl)
   }
@@ -107,10 +126,10 @@ GPS2MobMat = function(filelist,itrvl=10,accuracylim=51,r=NULL,w=NULL,tint_m=NULL
   filels = list()
   cat("Read in all GPS csv files...\n")
   for(i in 1:length(filelist)){
-    file = filelist[i]
+    FILE = filelist[i]
     count=count+1
     #ProgressBar(length(filelist),count)
-    dat=read.csv(file,fileEncoding="UTF-8")
+	dat=read.csv(FILE, fileEncoding="UTF-8")
     dims_v[i]=nrow(dat)
     filels[[i]]=dat[,c(1,3,4,5,6)] # ignore UTC.time
   }
@@ -924,8 +943,7 @@ MobmatQualityOK = function(mobmat,obj){
 
 ## Input: CSV files
 ## output: mobility features
-MobilityFeatures = function(filename,
-                            fildir,
+MobilityFeatures = function(patient_name,
                             ACCURACY_LIM=51, ### meters GPS accuracy
                             ITRVL=10, ### seconds (data concatenation)
                             nreps=1, ### simulate missing data numer of times
@@ -936,21 +954,18 @@ MobilityFeatures = function(filename,
                             minpausedur=300,
                             minpausedist=60,
                             rad_fp=NULL,
-                            wid_fp=NULL
+                            wid_fp=NULL,...
 ){
-  try1=try(setwd(fildir),silent=TRUE)
-  if(class(try1) == "try-error"){
-    warning(paste(filedir,"does not exist."))
-    return(NA)
-  }
-  if(file.exists(paste(filename,".Rdata",sep=""))){
-    load(paste(filename,".Rdata",sep=""),envir=.GlobalEnv)
+  patient_output_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+  patient_Rdata_filepath = paste(patient_output_filepath, "/gps_features.Rdata",sep="")
+  if(file.exists(patient_Rdata_filepath)){
+    print("mobmat, mobmatmiss, and obj already exist. Moving on to simulating mobility gaps.")
+    load(patient_Rdata_filepath,envir=.GlobalEnv)
   }else{
-    filelist <- list.files(pattern = "\\.csv$")
-    mobmatmiss=GPS2MobMat(filelist,itrvl=ITRVL,accuracylim=ACCURACY_LIM,r=rad_fp,w=wid_fp)
+    filelist <- list.files(paste(data_filepath, patient_name, "gps", sep="/"), pattern = "\\.csv$")
+    mobmatmiss=GPS2MobMat(data_filepath, patient_name, filelist,itrvl=ITRVL,accuracylim=ACCURACY_LIM,r=rad_fp,w=wid_fp)
     mobmat = GuessPause(mobmatmiss,mindur=minpausedur,r=minpausedist)
     obj=InitializeParams(mobmat)
-    save(file=paste(filename,".Rdata",sep=""),mobmat,mobmatmiss,obj)
   }
   qOKmsg=MobmatQualityOK(mobmat,obj)
   if(qOKmsg!=""){
@@ -989,11 +1004,12 @@ MobilityFeatures = function(filename,
     }    
     outmat = cbind(rownames(featavg),featavg)
     colnames(outmat)=c("Date",colnames(featavg))
-    write.table(outmat,paste("MobFeatMat_",filename,".txt",sep=""),quote=F,col.names=T,row.names=F,sep="\t")
+    write.table(outmat,paste(output_filepath, "/", patient_output_filepath,"/MobFeatMat.txt",sep=""),quote=F,col.names=T,row.names=F,sep="\t")
   }else{
     featavg=NULL
   }
-  return(list('mobmat'=mobmat,'mobmatmiss'=mobmatmiss,'featsims'=lsmf,'siglocsims'=lssigloc,'featavg'=featavg))
+    saveRDS(list(mobmat=mobmat,mobmatmiss=mobmatmiss,obj=obj,featsims=lsmf,siglocsims=lssigloc,featavg=featavg),
+		patient_Rdata_filepath)
 }
 
 
