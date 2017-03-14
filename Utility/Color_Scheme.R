@@ -23,6 +23,8 @@ wake_col  = rgb(.8,.2,.2)
 
 light_alpha = 0.7
 
+palette = rev(cols(100,start=0,end=.635,darkness=1))
+
 
 
 

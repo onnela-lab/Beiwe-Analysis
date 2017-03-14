@@ -19,22 +19,22 @@ def find_changes(G, patient, timestamps, UTCs, change_val):
         beginning = timestamps[0] # the beginning timestamp of a new change.
         end       = timestamps[addition-1] # the end timestamp of a new change.
         day       = UTCs[addition].split("T")[0] # Which day this will count as.
-        pulse = [patient, day, beginning, end, addition] # define the pulse.
-        # pulses.append(pulse) # add the pulse.
-        G.write(",".join([str(i) for i in pulse])+"\n")
+        burst = [patient, day, beginning, end, addition] # define the burst.
+        # bursts.append(burst) # add the burst.
+        G.write(",".join([str(i) for i in burst])+"\n")
         timestamps = timestamps[addition:] # delete the considered files.
         UTCs       = UTCs[addition:] # same.
         change = change[1:] # delete the current consideration.
     return timestamps, UTCs
 
-def record_pulses(stream, change_val):
+def record_bursts(stream, change_val):
     total_start = time.time()
-    stream_output_file = output_filepath + "/" + stream + "_pulses.txt"
+    stream_output_file = output_filepath + "/" + stream + "_bursts.txt"
     with open(stream_output_file, "w+") as G:
         G.write("patient,date,start,end,pings\n")
         for patient in patients:
             start = time.time()
-            pulses, timestamps, UTCs = [], [], [] # pulses is unnecessary, delete soon.
+            bursts, timestamps, UTCs = [], [], [] # bursts is unnecessary, delete soon.
             filename = data_filepath + "/" + patient + "/" + stream
             if os.path.exists(filename):
                 files = [file for file in os.listdir(filename) if ".csv" in file]
@@ -48,6 +48,6 @@ def record_pulses(stream, change_val):
     total_stop = time.time()
     print(total_stop - total_start)
 
-record_pulses(stream, milliseconds)
+record_bursts(stream, milliseconds)
 
 

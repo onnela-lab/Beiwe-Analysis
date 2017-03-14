@@ -45,7 +45,6 @@ GPS_imputation_and_features = function(patient_name,
   # Check to see if GPS has been processed
   # IF so, load mobmat, and obj
 
-  
   if(!file.exists(patient_preprocessed_filename)){
     if(verbose) cat("No preprocessed data.\n")
     if(automatic_preprocessing){

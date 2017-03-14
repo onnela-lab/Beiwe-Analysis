@@ -1,17 +1,18 @@
-survey_quality = function(data_filepath){
-
+survey_responsiveness = function(...){
+  
+  patient_names = list.files(data_filepath)[-grep("\\.",list.files(data_filepath))]
   total = as.data.frame(matrix(NA,10000,5))
   colnames(total) = c("Person","Survey_ID","Notified","Present","Submitted")
   j=1
-  for(person in list.files(data_filepath)[-grep("\\.",list.files(data_filepath))]){
-    print(person)
-    person_surveys_filepath = paste(data_filepath, person, "survey_timings",sep="/")
-    surveys = list.files(person_surveys_filepath)
+  for(patient_name in patient_names){
+    print(patient_name)
+    patient_name_surveys_filepath = paste(data_filepath, patient_name, "survey_timings",sep="/")
+    surveys = list.files(patient_name_surveys_filepath)
     for(survey in surveys){
-      person_survey_answered_filepath = paste(person_surveys_filepath,"/",survey,sep="")
-      person_surveys_answered = list.files(person_survey_answered_filepath)
-      for(person_survey_answered in person_surveys_answered){
-        data=read.csv2(paste(person_survey_answered_filepath, "/", person_survey_answered,sep=""),sep=",")
+      patient_name_survey_answered_filepath = paste(patient_name_surveys_filepath,"/",survey,sep="")
+      patient_name_surveys_answered = list.files(patient_name_survey_answered_filepath)
+      for(patient_name_survey_answered in patient_name_surveys_answered){
+        data=read.csv2(paste(patient_name_survey_answered_filepath, "/", patient_name_survey_answered,sep=""),sep=",")
         notified=NA;      present=NA;      submitted=NA
         if("event" %in% colnames(data)){ # double check these are the only cases where surveys are filled out!
           notified = data[which(data[,"event"]=="notified"),"timestamp"][1]
@@ -23,7 +24,7 @@ survey_quality = function(data_filepath){
           if(!is.na(notified_id[1])){if(notified_id[1]+1<=nrow(data)){present = data[notified_id[1]+1, "timestamp"][1]}}
           submitted = data[which(data[,"question.id"] == "User hit submit"), "timestamp"][1]
         }
-        total[j,] = c(person, survey, notified, present, submitted)
+        total[j,] = c(patient_name, survey, notified, present, submitted)
         j = j+1  
       }
     }
@@ -64,7 +65,6 @@ survey_quality = function(data_filepath){
   
   for(column in c("Notified","Present","Submitted"))
     curated_total[,column] = as.numeric(as.character(curated_total[,column]))
-
-  return(curated_total)
+  
+  saveRDS(curated_total, paste(output_filepath, "/Processed_Data/Group/surveys_responsiveness.rds", sep=""))
 }
-

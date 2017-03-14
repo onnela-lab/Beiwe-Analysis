@@ -1,68 +1,69 @@
-data_quality_plotting = function(output_filepath, counts, coverage, stream, frequency, pulse_duration, break_duration){
+data_quality_plotting = function(stream, frequency, burst_duration, break_duration){
+  
+  plot_filename = paste(output_filepath, "/Results/Group/data_quality_",stream,".pdf",sep="")
+  
+  bursts   = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_bursts.rds", sep="")) %>% data.frame
+  coverage = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_coverage.rds", sep="")) %>% data.frame
+  
   par(mgp=c(2.5,1,0),cex.main=1.2,cex.lab=1.2)
   
-  patients = counts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character %>% sort
+  patients = bursts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character %>% sort
   colors = cols(length(patients),transparency=1-light_alpha)
-  person_colors = colors[counts %>% data.frame %>% dplyr::select(patient) %>% unlist %>% as.numeric]
-  names = counts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character
+  person_colors = colors[bursts %>% data.frame %>% dplyr::select(patient) %>% unlist %>% as.numeric]
+  names = bursts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character
   
   seconds_per_day = 60*60*24
-  x_range = c(min(unlist(counts["zeroed"])), round(max(unlist(counts["zeroed"]))*1.3))
-
-  pdf(output_filepath,width=8,height=6)
+  x_range = c(min(unlist(bursts["zeroed"])), round(max(unlist(bursts["zeroed"]))*1.3))
   
-  plot(unlist(counts["zeroed"]),log10(1+unlist(counts["count"])),col=NA,yaxt = "n",ylim=c(0,5),xlim=x_range,
-       xlab="Day",ylab="Number of Pulses",main=paste("Number of Pulses Per Day"," (",stream,")",sep=""))
-  axis(2,at=0:5,labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5)))
-  points(unlist(counts["zeroed"]),log10(1+unlist(counts["count"])),pch=16,col=person_colors)
-  abline(h=log10(1+seconds_per_day/(pulse_duration+break_duration)),lwd=2,lty=1,col=line_col)
+  pdf(plot_filename,width=8,height=6)
+  
+  plot(bursts[,"zeroed"],log10(1+bursts[,"num_bursts"]),col=NA,yaxt = "n",ylim=c(0,4),xlim=x_range,
+       xlab="Day",ylab="Number of Bursts",main=paste("Number of Bursts Per Day"," (",stream,")",sep=""))
+  axis(2,at=log10(1+10^(0:4)),labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4)))
+  points(unlist(bursts[,"zeroed"]),log10(1+unlist(bursts[,"num_bursts"])),pch=16,col=person_colors)
+  abline(h=log10(1+seconds_per_day/(burst_duration+break_duration)),lwd=2,lty=1,col=line_col)
   legend("topright",legend=names, col=colors, pch=16,ncol=1,bg="white")
   
   
-  plot(unlist(counts["zeroed"]),log10(1+unlist(counts["avg_pings"])),col=NA,ylim=c(0,5),xlim=x_range,
-       yaxt = "n",xlab="Day",ylab="Average Pings per Pulse",main=paste("Average Pings per Pulse\nOver Time"," (",stream,")",sep=""))
-  axis(2,at=0:5,labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5)))
-  points(unlist(counts["zeroed"]),log10(1+unlist(counts["avg_pings"])),pch=16,col=person_colors)
-  abline(h=log10(1+frequency*pulse_duration),lwd=2,lty=1,col=line_col)
+  plot(bursts[,"zeroed"],log10(.1+bursts[,"avg_pings"]/burst_duration),col=NA,ylim=c(-1,2),xlim=x_range,
+       yaxt = "n",xlab="Day",ylab="Average Pings per Second",main=paste("Average Pings per Second Within burst\nOver Time"," (",stream,")",sep=""))
+  axis(2,at=log10(.1+c(0,10^(0:4))),labels=c(0, 1, expression(10^1),expression(10^2),expression(10^3),expression(10^4)))
+  points(unlist(bursts[,"zeroed"]),log10(.1+bursts[,"avg_pings"]/burst_duration),pch=16,col=person_colors)
+  abline(h=log10(.1+frequency),lwd=2,lty=1,col=line_col)
   legend("topright",legend=names, col=colors, pch=16,ncol=1,bg="white")
   
-  plot(unlist(counts["zeroed"]),log10(1+unlist(counts["avg_within_pulse_duration"])),col=NA,ylim=c(0,5),xlim=x_range,
-       yaxt = "n",xlab="Day",ylab="Average Pings per Pulse",main=paste("Average Duration per Pulse\nOver Time"," (",stream,")",sep=""))
-  axis(2,at=0:5,labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5)))
-  points(unlist(counts["zeroed"]),log10(1+unlist(counts["avg_within_pulse_duration"])),pch=16,col=person_colors)
-  abline(h=log10(pulse_duration),lwd=2,lty=1,col=line_col)
+  plot(bursts[,"zeroed"],log10(1+bursts[,"avg_within_burst_duration"]),col=NA,ylim=c(0,4),xlim=x_range,
+       yaxt = "n",xlab="Day",ylab="Average Pings per burst",main=paste("Average Duration per burst\nOver Time"," (",stream,")",sep=""))
+  axis(2,at=log10(1+10^(0:4)),labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4)))
+  points(bursts[,"zeroed"],log10(1+bursts[,"avg_within_burst_duration"]),pch=16,col=person_colors)
+  abline(h=log10(burst_duration),lwd=2,lty=1,col=line_col)
   legend("topright",legend=names, col=colors, pch=16,ncol=1,bg="white")
   
-  plot(unlist(counts["zeroed"]),log10(unlist(counts["avg_between_pulse_duration"])-unlist(counts["avg_within_pulse_duration"])),
-       ylim=c(0,5),col=NA,xlim=x_range,yaxt = "n",xlab="Day",ylab="Average Duration Between Pulses",
-       main=paste("Average Duration Between Pulses\nOver Time"," (",stream,")",sep=""))
-  axis(2,at=0:5,labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5)))
-  points(unlist(counts["zeroed"]),log10(unlist(counts["avg_between_pulse_duration"])-unlist(counts["avg_within_pulse_duration"])),
+  plot(bursts[,"zeroed"],log10(bursts[,"avg_between_burst_duration"]-bursts[,"avg_within_burst_duration"]),
+       ylim=c(0,6),col=NA,xlim=x_range,yaxt = "n",xlab="Day",ylab="Average Duration Between bursts",
+       main=paste("Average Duration Between bursts\nOver Time"," (",stream,")",sep=""))
+  axis(2,at=log10(1+10^(0:6)),labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5),expression(10^6)))
+  points(unlist(bursts["zeroed"]),log10(unlist(bursts["avg_between_burst_duration"])-unlist(bursts["avg_within_burst_duration"])),
          pch=16,col=person_colors)
   abline(h=log10(1+break_duration),lwd=2,lty=1,col=line_col)
   legend("topright",legend=names, col=colors, pch=16,ncol=1,bg="white")
-  
-  
-  plot(unlist(coverage["zeroed"]), unlist(coverage["mean"]),col=NA,ylim=c(0,1),xlim=x_range,
+
+  plot(coverage[,"zeroed"], coverage[,"total_coverage_across_all_patients"],col=NA,ylim=c(0,1.15),
        main=paste("Coverage Over Time"," (",stream,")",sep=""),xlab="Day",ylab="Coverage")
-  points(unlist(coverage["zeroed"]), unlist(coverage["total"]),pch=16,col="gray")
-  points(unlist(coverage["zeroed"]), unlist(coverage["mean"]),pch=16,col="black")
-  legend("topright",pch=16,legend=c("Active Patients","All Patients"),col=c("black","gray"),bg="white")
+  abline(h=1,lty=2,lwd=.75,col=rgb(.5,.5,.5))
+  #points(coverage[,"zeroed"], coverage[,"total_coverage_across_all_patients"],pch=16,col="gray")
+  points(coverage[,"zeroed"], coverage[,"num_bursts_coverage"],pch=16,col=cols(3,transparency = .8)[1])
+  points(coverage[,"zeroed"], coverage[,"within_burst_length_coverage"],pch=16,col=cols(3,transparency = .8)[2])
+  points(coverage[,"zeroed"], coverage[,"within_burst_frequency_coverage"],pch=16,col=cols(3,transparency = .8)[3])
+  points(coverage[,"zeroed"], coverage[,"total_coverage_across_active_patients"],pch=16,col=rgb(.7,.7,.7))
+  
+  lines(lowess(coverage[,"zeroed"], coverage[,"num_bursts_coverage"],f=.25),lwd=3,col=cols(3)[1])
+  lines(lowess(coverage[,"zeroed"], coverage[,"within_burst_length_coverage"],f=.25),lwd=3,col=cols(3)[2])
+  lines(lowess(coverage[,"zeroed"], coverage[,"within_burst_frequency_coverage"],f=.25),lwd=3,col=cols(3)[3])
+  lines(lowess(coverage[,"zeroed"], coverage[,"total_coverage_across_active_patients"],f=.25),lwd=3,col="black")
+  
+  legend("bottomleft",ncol=2,lwd=c(3,3,3,3),legend=c("Total Coverage","Burst Count", "Burst Length", "Frequency in Burst"),col=c("black",cols(3)),bg="white")
+  box()
   dev.off()
   dev.off()
 }
-
-
-# data_quality_plotting(output_filepath = "C:/Users/Patrick/Desktop/Accelerometer Data Quality.pdf",
-#     accelerometer_counts, "accelerometer",
-#     frequency = 10,
-#     pulse_duration = 60,
-#     break_duration = 60)
-# 
-# data_quality_plotting(output_filepath = "C:/Users/Patrick/Desktop/GPS Data Quality.pdf",
-#     gps_counts, "gps",
-#     frequency = 1,
-#     pulse_duration = 60,
-#     break_duration = 60*10)
-
-
