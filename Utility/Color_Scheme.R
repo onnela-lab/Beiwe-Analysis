@@ -18,6 +18,10 @@ cerulean    = c(.2,.3,.8)
 vermillion  = c(.8,.25,.2)
 limegreen   = c(.35,1,0)
 
+dark_line_col = rgb(.3,.3,.3)
+light_line_col = rgb(.5,.5,.5)
+
+
 sleep_col = rgb(.2,.2,.8)
 wake_col  = rgb(.8,.2,.2)
 

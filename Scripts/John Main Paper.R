@@ -111,14 +111,12 @@ data_quality_plotting(stream = "gps",
                       burst_duration = 60,
                       break_duration = 60*10)
 
-survey_quality_plotting()
+survey_responsiveness_plotting()
 
 
-
-
-
-
-
+bursts = readRDS("C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Output/Preprocessed_Data/Group/gps_bursts.rds") %>% data.frame
+coverage = readRDS("C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Output/Preprocessed_Data/Group/gps_coverage.rds") %>% data.frame
+curated_total = readRDS(paste(output_filepath, "/Processed_Data/Group/surveys_responsiveness.rds", sep=""))
 
 
 
