@@ -1,4 +1,4 @@
-data_quality_plotting = function(stream, frequency, burst_duration, break_duration){
+plot_data_quality = function(stream, frequency, burst_duration, break_duration){
   
   plot_filename = paste(output_filepath, "/Results/Group/data_quality_",stream,".pdf",sep="")
   

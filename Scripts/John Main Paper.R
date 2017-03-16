@@ -2,7 +2,6 @@
 ################    Beiwe Master Pipeline    ###################
 ################################################################
 
-
 source_filepath    = "C:/Users/Patrick/Desktop/Beiwe-Analysis"
 data_filepath      = "C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Data/2017.01.09"
 output_filepath    = "C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Output"
@@ -81,46 +80,39 @@ coverage_over_time("accelerometer")
 coverage_over_time("gps")
 
 
-survey_mat = survey_quality(data_filepath)
 
+###################################
+####          plotting         ####
+###################################
 
+plot_data_quality(stream = "accelerometer",
+                      frequency = 10,
+                      burst_duration = 60,
+                      break_duration = 60)
+
+plot_data_quality(stream = "gps",
+                      frequency = 1,
+                      burst_duration = 60,
+                      break_duration = 60*10)
+
+plot_survey_timing()
+plot_survey_completion()
 
 
 ###################################
 ####          analysis         ####
 ###################################
 
-#all_features = list(surveys, location_features, sleep_features, text_features, call_features)
-#dataset = Reduce(full_join, all_features)
-# call statistical analysis functions here.
+filters = list(
+  All_Questions = get_questions(),
+  WSS = c("Unable to cope with stress","Feeling tired","Feeling Confused or Puzzled","Feeling depressed or sad", "Difficulty falling asleep", "Difficulty staying asleep", "Waking up too early", "Don't feel rested after waking up", "Feeling nervous; scared; or anxious", "Little interest or pleasure in things", "Trouble concentrating"),
+  #Missing_Medications = c("Missing doses of medications", "Missing Doses of Medication", "Missing Doses of Medications"),
+  Tired = c("Feeling tired", "Difficulty staying asleep", "Waking up too early", "Difficulty falling asleep", "Don't feel rested after waking up", "Feeling Tired"),
+  Anhedonia = c("Feeling Confused or Puzzled","Little interest or pleasure in things","Feeling bad or guilty about yourself","Feeling depressed or sad","Trouble concentrating","Difficulty thinking clearly","Withdrawing from social interaction"),
+  Anxiety = c("Unable to cope with stress", "Feeling suspicious","Feeling nervous; scared; or anxious","Trouble relaxing","Poor appetite or overeating")
+)
 
-
-
-
-###################################
-####          plotting         ####
-###################################
-
-data_quality_plotting(stream = "accelerometer",
-                      frequency = 10,
-                      burst_duration = 60,
-                      break_duration = 60)
-
-data_quality_plotting(stream = "gps",
-                      frequency = 1,
-                      burst_duration = 60,
-                      break_duration = 60*10)
-
-survey_responsiveness_plotting()
-
-
-bursts = readRDS("C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Output/Preprocessed_Data/Group/gps_bursts.rds") %>% data.frame
-coverage = readRDS("C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Output/Preprocessed_Data/Group/gps_coverage.rds") %>% data.frame
-curated_total = readRDS(paste(output_filepath, "/Processed_Data/Group/surveys_responsiveness.rds", sep=""))
-
-
-
-
+plot_data_quality_predictiveness(filters)
 
 
 
