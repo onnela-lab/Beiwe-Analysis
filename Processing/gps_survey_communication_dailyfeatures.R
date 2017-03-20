@@ -65,19 +65,31 @@ f1 = function(survey_id,SID,aIDs,qIDs,datadir){
   return(list('qIDs'=qIDs,'aIDs'=aIDs))
 }
 
-CreateMobilityFeatures = function(patient_id,homedir){
-  pcsfilename =paste(homedir,"Processed_data",patient_id,paste("gps_imputed_",patient_id,".Rdata",sep=""),sep="/")
-  if(!file.exists(pcsfilename)){
+CreateMobilityFeatures = function(patient_name,...){
+  # input processed imputed GPS data
+  patient_input_filepath = paste(output_filepath, "/Processed_Data/Individual/", patient_name, sep="")
+  patient_input_filename = paste(patient_input_filepath, "/gps_imputed_mobmat.rds",sep="")
+  if(!file.exists(patient_input_filename)){
     cat("No imputed data.\n")
     return(NULL)
   }  
-  load(pcsfilename)
-  prepcsfilename = paste(homedir,"Preprocessed_data",patient_id,paste("gps_preprocessed_",patient_id,".Rdata",sep=""),sep="/")
-  if(!file.exists(prepcsfilename)){
+  inlist=readRDS(patient_input_filename)
+  mobmatsims=inlist[[1]];objsims=inlist[[2]]
+  
+  #input preprocessed GPS data
+  patient_input_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+  patient_input_filename = paste(patient_input_filepath, "/gps_preprocessed.rds",sep="")
+  if(!file.exists(patient_input_filename)){
     cat("No preprocessed data.\n")
     return(NULL)
   }  
-  load(prepcsfilename)
+  inlist=readRDS(patient_input_filename)
+  mobmat=inlist[[1]];mobmatmiss=inlist[[2]];obj=inlist[[3]];tz=inlist[[4]];CENTERRAD=inlist[[5]];ITRVL=inlist[[6]]
+  
+  #output feature file
+  patient_output_filepath = paste(output_filepath, "/Processed_Data/Individual/", patient_name, sep="")
+  patient_output_filename = paste(patient_output_filepath,"/MobFeatures_",patient_name,".rds",sep="")
+  
   nreps = length(mobmatsims)
   lsmf = list()
   lssigloc = list()
@@ -107,16 +119,16 @@ CreateMobilityFeatures = function(patient_id,homedir){
   }else{
     featavg=NULL
   }
-  outfilename = file.path(paste(homedir,"Processed_data",patient_id,sep="/"),paste("MobFeatures_",patient_id,".Rdata",sep=""))
-  save(file=outfilename,outmat,lsmf,lssigloc,featavg)  
+  saveRDS(list(outmat,lsmf,lssigloc,featavg),patient_output_filename)  
 }
 
 
 
 
-daily_features = function(homedir){
-  datadir = paste(homedir,"Data",sep="/")
-  SIDs=lapply(strsplit(list.dirs(paste(homedir,"Data",sep="/"),recursive=FALSE),"/"),function(x) x[length(x)])
+DailyFeatures = function(...){
+  patient_output_filepath = paste(output_filepath, "/Processed_Data/Group",sep="")
+  patient_output_filename = paste(patient_output_filepath, "/feature_matrix.rds",sep="")
+  SIDs=patient_names
   qIDs = list()
   aIDs_full = list()
   mob_full = list()
@@ -125,19 +137,22 @@ daily_features = function(homedir){
     # GPS
     mobmat=NULL
     aIDs=list()
-    mobfilename = file.path(paste(homedir,"Processed_data",patient_id,sep="/"),paste("MobFeatures_",patient_id,".Rdata",sep=""))
-    if(file.exists(mobfilename)  ){
-      load(mobfilename)
-      mobmat = data.frame(outmat,stringsAsFactors=FALSE)
+    patient_input_filepath = paste(output_filepath, "/Processed_Data/Individual/", patient_id, sep="")
+    patient_input_filename = paste(patient_input_filepath,"/MobFeatures_",patient_id,".rds",sep="")
+    if(file.exists(patient_input_filename)){
+      inlist=readRDS(patient_input_filename)
+      #list(outmat,lsmf,lssigloc,featavg)
+      mobmat = data.frame(inlist[[1]],stringsAsFactors=FALSE)
     }
     mob_full[[patient_id]]=mobmat
     # Survey Answers
-    if(file.exists(paste(homedir,"Data",patient_id,"survey_answers",sep="/"))){
-      SurIDs=lapply(strsplit(list.dirs(paste(homedir,"Data",patient_id,"survey_answers",sep="/"),recursive=FALSE),"/"),function(x) x[length(x)])
+    patient_survey_filepath = paste(data_filepath,patient_id,"survey_answers",sep="/")
+    if(file.exists(patient_survey_filepath)){
+      SurIDs=lapply(strsplit(list.dirs(patient_survey_filepath,recursive=FALSE),"/"),function(x) x[length(x)])
       if(length(SurIDs)>0){
         for(j in 1:length(SurIDs)){
           survey_id = SurIDs[[j]]
-          svout = f1(survey_id,patient_id,aIDs,qIDs,datadir)
+          svout = f1(survey_id,patient_id,aIDs,qIDs,data_filepath)
           qIDs=svout$qIDs
           aIDs=svout$aIDs
         }
@@ -184,7 +199,7 @@ daily_features = function(homedir){
   ## create text and call features using Patrick's code and append them to outmat
   day = function(timestamp) strsplit(as.character(as.POSIXct(timestamp,tz="",origin="1970-01-01"))," ")[[1]][1]
   for(i in 1:length(SIDs)){
-    setwd(paste(datadir,SIDs[[i]],sep="/")) # change for each patient!  Of course, this can be standardized.
+    setwd(paste(data_filepath,SIDs[[i]],sep="/")) # change for each patient!  Of course, this can be standardized.
     if(file.exists("texts")){
       textmat = c()
       text_files = list.files("texts")
@@ -344,7 +359,8 @@ daily_features = function(homedir){
       }    
     }
   }
-  write.table(outmat,file=paste(homedir,"Processed_data","FeatureMatrix.txt",sep="/"),sep="\t",row.names=FALSE,col.names=TRUE)
+  saveRDS(list(outmat),patient_output_filename)
+  write.table(outmat,file=paste(patient_output_filepath,"/feature_matrix.txt",sep="/"),sep="\t",row.names=FALSE,col.names=TRUE)
 }
 
 
