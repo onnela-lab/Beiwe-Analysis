@@ -6,78 +6,85 @@
 # ContinuousDataCollectionTracks(homedir,ID,tz="")
 
 
-# tol: length of time (seconds) between data points where we declare it to be a new interval (tolerance)
-AccelerometerDataCollection = function(homedir,ID,tol=5){
-  cat("Scanning accelerometer data...\n")
-  accdir = paste(homedir,"Data",ID,"accelerometer",sep="/")
-  if(!file.exists(accdir)){return(NULL)}
-  filenames=list.files(path=accdir,full.names=T,pattern="\\.csv$")
-  counter=0
-  for(i in 1:length(filenames)){
-    dat=read.csv(filenames[i])
-    if(i==1){
-      outmat=matrix(NA,nrow=nrow(dat),ncol=2)
-    }
-    if(counter + nrow(dat)>nrow(outmat)){
-      outmat = rbind(outmat,matrix(NA,nrow=max(nrow(dat),nrow(outmat)),ncol=2))
-    }
-    outmat[(counter+1):(counter+nrow(dat)),1]=dat[,1]
-    #outmat[(counter+1):(counter+nrow(dat)),2]=apply(dat,1,function(xx) sqrt(as.numeric(xx[4])^2+as.numeric(xx[5])^2+as.numeric(xx[6])^2))
-    counter=counter+nrow(dat)
-  }
-  outmat=outmat[1:counter,]
-  outmat2 = matrix(NA,nrow=100,ncol=2)
-  outmat2[1,1]=outmat[1,1]
+
+# tol: length of time (minutes) between data points where we declare it to be a new interval (tolerance)
+AccelerometerDataCollection = function(ACCvec,tol){
+  outmat = matrix(NA,nrow=100,ncol=2)
+  outmat[1,1]=ACCvec[1]
   counter=1
-  for(i in 1:(nrow(outmat)-1)){
-    if(outmat[i+1,1]-outmat[i,1]>tol*1000){
-      outmat2[counter,2]=outmat[i,1]
-      if(nrow(outmat2)<counter+1){
-        outmat2=rbind(outmat2,matrix(NA,nrow=nrow(outmat2),ncol=2))
+  for(i in 1:(length(ACCvec)-1)){
+    if(ACCvec[i+1]-ACCvec[i]>tol*60*.5+tol*60*1){
+      outmat[counter,2]=ACCvec[i]+tol*60
+      if(nrow(outmat)<counter+1){
+        outmat=rbind(outmat,matrix(NA,nrow=nrow(outmat),ncol=2))
       }
-      outmat2[counter+1,1]=outmat[i+1,1]
+      outmat[counter+1,1]=ACCvec[i+1]
       counter=counter+1
     }
   }
-  outmat2=outmat2[1:counter,]
-  outmat2[nrow(outmat2),2]=dat[nrow(dat),1]
-  # plot(NA,xlim=c(outmat2[1,1],outmat2[nrow(outmat2),2]),ylim=c(0,2))
-  # for(i in 1:nrow(outmat2)){
-  #   lines(outmat2[i,],c(1,1))
-  # }
-  return(outmat2) 
+  outmat=outmat[1:counter,]
+  if(counter<2){
+    return(NULL)
+  }
+  if(is.na(outmat[nrow(outmat),2])){
+    outmat[nrow(outmat),2]=ACCvec[length(ACCvec)]+tol*60
+  }
+  return(outmat*1000) 
 }
 
-# tol: length of time (seconds) between data points where we declare it to be a new interval (tolerance)
-GPSDataCollection = function(homedir,ID,tol=120){
-  cat("Scanning GPS data...\n")
-  gpsdir = paste(homedir,"Data",ID,"gps",sep="/")
-  if(!file.exists(gpsdir)){return(NULL)}
-  filenames=list.files(path=gpsdir,full.names=T,pattern="\\.csv$")
-  counter=0
-  for(i in 1:length(filenames)){
-    dat=read.csv(filenames[i])
-    if(i==1){
-      outmat=matrix(NA,nrow=nrow(dat),ncol=1)
-    }
-    if(counter + nrow(dat)>nrow(outmat)){
-      outmat = rbind(outmat,matrix(NA,nrow=max(nrow(dat),nrow(outmat)),ncol=1))
-    }
-    outmat[(counter+1):(counter+nrow(dat)),1]=dat[,1]
-    #outmat[(counter+1):(counter+nrow(dat)),2]=apply(dat,1,function(xx) sqrt(as.numeric(xx[4])^2+as.numeric(xx[5])^2+as.numeric(xx[6])^2))
-    counter=counter+nrow(dat)
+
+
+# # tol: length of time (seconds) between data points where we declare it to be a new interval (tolerance)
+# AccelerometerDataCollectionOld = function(homedir,ID,tol=5){
+#   cat("Scanning accelerometer data...\n")
+#   accdir = paste(homedir,"Data",ID,"accelerometer",sep="/")
+#   if(!file.exists(accdir)){return(NULL)}
+#   filenames=list.files(path=accdir,full.names=T,pattern="\\.csv$")
+#   outmat_ls = list()
+#   for(i in 1:length(filenames)){
+#     dat=read.csv(filenames[i])
+#     outmat_ls[[i]]=dat[,1]
+#   }
+#   outmat = unlist(outmat_ls)
+#   outmat2 = matrix(NA,nrow=100,ncol=2)
+#   outmat2[1,1]=outmat[1]
+#   counter=1
+#   for(i in 1:(length(outmat)-1)){
+#     if(outmat[i+1]-outmat[i]>tol*1000){
+#       outmat2[counter,2]=outmat[i]
+#       if(nrow(outmat2)<counter+1){
+#         outmat2=rbind(outmat2,matrix(NA,nrow=nrow(outmat2),ncol=2))
+#       }
+#       outmat2[counter+1,1]=outmat[i+1]
+#       counter=counter+1
+#     }
+#   }
+#   outmat2=outmat2[1:counter,]
+#   outmat2[nrow(outmat2),2]=dat[nrow(dat),1]
+#   # plot(NA,xlim=c(outmat2[1,1],outmat2[nrow(outmat2),2]),ylim=c(0,2))
+#   # for(i in 1:nrow(outmat2)){
+#   #   lines(outmat2[i,],c(1,1))
+#   # }
+#   return(outmat2) 
+# }
+
+
+
+GPSDataCollection = function(GPSmat,tol=5){
+  ID34=which(GPSmat[,1]>=3)
+  if(length(ID34)>0){
+    GPSmat = GPSmat[-ID34,]
   }
-  outmat=as.matrix(outmat[1:counter,],nrow=counter,ncol=1)
   outmat2 = matrix(NA,nrow=100,ncol=2)
-  outmat2[1,1]=outmat[1,1]
+  outmat2[1,1]=GPSmat[1,4]
   counter=1
-  for(i in 1:(nrow(outmat)-1)){
-    if(outmat[i+1,1]-outmat[i,1]>tol*1000){
-      outmat2[counter,2]=outmat[i,1]
+  for(i in 1:(nrow(GPSmat)-1)){
+    if(GPSmat[i+1,4]-GPSmat[i,7]>60*tol){
+      outmat2[counter,2]=GPSmat[i,7]
       if(nrow(outmat2)<counter+1){
         outmat2=rbind(outmat2,matrix(NA,nrow=nrow(outmat2),ncol=2))
       }
-      outmat2[counter+1,1]=outmat[i+1,1]
+      outmat2[counter+1,1]=GPSmat[i+1,4]
       counter=counter+1
     }
   }
@@ -85,17 +92,67 @@ GPSDataCollection = function(homedir,ID,tol=120){
     return(NULL)
   }
   outmat2=outmat2[1:(counter-1),]
-  outmat2[nrow(outmat2),2]=dat[nrow(dat),1]
+  if(is.na(outmat2[nrow(outmat2),2])){
+    outmat2[nrow(outmat2),2]=GPSmat[nrow(GPSmat),7]
+  }
   # plot(NA,xlim=c(outmat2[1,1],outmat2[nrow(outmat2),2]),ylim=c(0,2))
   # for(i in 1:nrow(outmat2)){
   #   lines(outmat2[i,],c(1,1))
   # }
-  return(outmat2)
+  return(outmat2*1000)
 }
+
+
+
+
+# # tol: length of time (seconds) between data points where we declare it to be a new interval (tolerance)
+# GPSDataCollectionOld = function(homedir,ID,tol=120){
+#   cat("Scanning GPS data...\n")
+#   gpsdir = paste(homedir,"Data",ID,"gps",sep="/")
+#   if(!file.exists(gpsdir)){return(NULL)}
+#   filenames=list.files(path=gpsdir,full.names=T,pattern="\\.csv$")
+#   counter=0
+#   for(i in 1:length(filenames)){
+#     dat=read.csv(filenames[i])
+#     if(i==1){
+#       outmat=matrix(NA,nrow=nrow(dat),ncol=1)
+#     }
+#     if(counter + nrow(dat)>nrow(outmat)){
+#       outmat = rbind(outmat,matrix(NA,nrow=max(nrow(dat),nrow(outmat)),ncol=1))
+#     }
+#     outmat[(counter+1):(counter+nrow(dat)),1]=dat[,1]
+#     #outmat[(counter+1):(counter+nrow(dat)),2]=apply(dat,1,function(xx) sqrt(as.numeric(xx[4])^2+as.numeric(xx[5])^2+as.numeric(xx[6])^2))
+#     counter=counter+nrow(dat)
+#   }
+#   outmat=as.matrix(outmat[1:counter,],nrow=counter,ncol=1)
+#   outmat2 = matrix(NA,nrow=100,ncol=2)
+#   outmat2[1,1]=outmat[1,1]
+#   counter=1
+#   for(i in 1:(nrow(outmat)-1)){
+#     if(outmat[i+1,1]-outmat[i,1]>tol*1000){
+#       outmat2[counter,2]=outmat[i,1]
+#       if(nrow(outmat2)<counter+1){
+#         outmat2=rbind(outmat2,matrix(NA,nrow=nrow(outmat2),ncol=2))
+#       }
+#       outmat2[counter+1,1]=outmat[i+1,1]
+#       counter=counter+1
+#     }
+#   }
+#   if(counter<2){
+#     return(NULL)
+#   }
+#   outmat2=outmat2[1:(counter-1),]
+#   outmat2[nrow(outmat2),2]=dat[nrow(dat),1]
+#   # plot(NA,xlim=c(outmat2[1,1],outmat2[nrow(outmat2),2]),ylim=c(0,2))
+#   # for(i in 1:nrow(outmat2)){
+#   #   lines(outmat2[i,],c(1,1))
+#   # }
+#   return(outmat2)
+# }
 
 SVYDataCollection = function(homedir,ID){
   cat("Scanning survey data...\n")
-  svydir = paste(homedir,"Data",ID,"survey_answers",sep="/")
+  svydir = paste(homedir,ID,"survey_answers",sep="/")
   if(!file.exists(svydir)){return(NULL)}
   svynames=list.files(path=svydir,full.names=T)
   counter=0
@@ -186,15 +243,18 @@ GetXTcks = function(itrvl,tz=""){
 }
 
 PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEmat,SVYvec,tz=""){
+  if(is.null(ACCmat) && is.null(GPSmat) && is.null(SCNmat)){
+    return(NULL)
+  }
   tmin=min(min(ACCmat),min(GPSmat),min(SCNmat))
   tmax=max(max(ACCmat),max(GPSmat),max(SCNmat))
   nweeks=ceiling((tmax-tmin)/(1000*60*60*24*7))
-  if(!file.exists(paste(homedir,"Output",sep="/"))){
-    dir.create(paste(homedir,"Output",sep="/")) 
-  }
-  if(!file.exists(paste(homedir,"Output",ID,sep="/"))){
-    dir.create(paste(homedir,"Output",ID,sep="/")) 
-  }
+  # if(!file.exists(paste(homedir,"Output",sep="/"))){
+  #   dir.create(paste(homedir,"Output",sep="/")) 
+  # }
+  # if(!file.exists(paste(homedir,"Output",ID,sep="/"))){
+  #   dir.create(paste(homedir,"Output",ID,sep="/")) 
+  # }
   ylabels=c()
   if(!is.null(ACCmat)){
     ylabels=c(ylabels,"Accelerometer")
@@ -211,7 +271,7 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
   if(!is.null(SVYvec)){
     ylabels=c(ylabels,"Surveys")
   }
-  pdf(paste(homedir,"Output",ID,paste("DataCollectionTracks-",ID,".pdf",sep=""),sep="/"),width=6,height=4)
+  pdf(paste(homedir,"Results","Individual",ID,paste("DataCollectionTracks-",ID,".pdf",sep=""),sep="/"),width=6,height=4)
   for(ii in 1:nweeks){
     itrvl=tmin+c(ii-1,ii)*1000*60*60*24*7
     # Get accelerometer submat for this week
@@ -343,7 +403,7 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
 
 DZEDataCollection = function(homedir,ID,ACCmat,GPSmat,SCNmat){
   cat("Scanning for doze...\n")
-  scndir = paste(homedir,"Data",ID,"power_state",sep="/")
+  scndir = paste(homedir,ID,"power_state",sep="/")
   if(!file.exists(scndir)){return(NULL)}
   filenames=list.files(path=scndir,full.names=T,pattern="\\.csv$")
   outmat=matrix(NA,nrow=100,ncol=2)
@@ -382,7 +442,7 @@ DZEDataCollection = function(homedir,ID,ACCmat,GPSmat,SCNmat){
 # truncate the end of the interval if no other data streams are being collected.
 SCNDataCollection = function(homedir,ID,ACCmat,GPSmat,tol=10*60){
   cat("Scanning power state data...\n")
-  scndir = paste(homedir,"Data",ID,"power_state",sep="/")
+  scndir = paste(homedir,ID,"power_state",sep="/")
   if(!file.exists(scndir)){return(NULL)}
   filenames=list.files(path=scndir,full.names=T,pattern="\\.csv$")
   outmat=matrix(NA,nrow=100,ncol=2)
@@ -430,6 +490,32 @@ ContinuousDataCollectionTracks = function(homedir,ID,tz=""){
   SVYvec = SVYDataCollection(homedir,ID)
   DZEmat = DZEDataCollection(homedir,ID,ACCmat,GPSmat,SCNmat)
   PlotContinuousDataCollectionTracks(homedir,ID,ACCmat,GPSmat,SCNmat,DZEmat,SVYvec,tz)
+}
+
+ContinuousDataCollectionTracks = function(patient_name,ACCbinsize,tz="",...){
+  # Accelerometer
+  patient_data_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+  patient_data_filename_ACC = paste(patient_data_filepath, "/appended_sheared_file_acc_",ACCbinsize,".rds", sep="")
+  if(file.exists(patient_data_filename_ACC)){
+    ACCmat=AccelerometerDataCollection(readRDS(patient_data_filename_ACC)[,1],ACCbinsize)
+  }else{
+    ACCmat=NULL
+  }
+  # GPS
+  patient_data_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+  patient_data_filename_GPS = paste(patient_data_filepath, "/gps_preprocessed.rds", sep="")
+  if(file.exists(patient_data_filename_GPS)){
+    inlist=readRDS(patient_data_filename_GPS)
+    mobmatmiss=inlist[[2]]
+    GPSmat = GPSDataCollection(mobmatmiss)
+  }else{
+    GPSmat=NULL
+  }
+  # Survey
+  SVYvec = SVYDataCollection(data_filepath,patient_name)
+  SCNmat = SCNDataCollection(data_filepath,patient_name,ACCmat,GPSmat)
+  DZEmat = DZEDataCollection(data_filepath,patient_name,ACCmat,GPSmat,SCNmat)
+  PlotContinuousDataCollectionTracks(output_filepath,patient_name,ACCmat,GPSmat,SCNmat,DZEmat,SVYvec,tz)
 }
 
 

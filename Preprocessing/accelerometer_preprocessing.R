@@ -5,8 +5,8 @@ if(length(list.files(paste(data_filepath, patient_name, "accelerometer", sep="/"
 	  if(verbose) cat(paste("Aggregating by",minutes,"minutes\n"))
 	  code_location = paste(source_filepath,"Preprocessing", "accelerometer_preprocessing.py",sep="/")
 	  patient_data_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
-	  patient_data_filename_TXT = paste(patient_data_filepath, "/appended_sheared_file_acc_", minutes, ".txt",sep="")
-	  patient_data_filename_RDS = paste(patient_data_filepath, "/appended_sheared_file_acc_", minutes, ".rds", sep="")
+	  patient_data_filename_TXT = paste(patient_data_filepath, "/appended_sheared_file_acc_",minutes,".txt",sep="")
+	  patient_data_filename_RDS = paste(patient_data_filepath, "/appended_sheared_file_acc_",minutes,".rds", sep="")
 	  
 	  if(file.exists(patient_data_filename_RDS)){
 		if(verbose) cat("Already preprocessed.\n")
