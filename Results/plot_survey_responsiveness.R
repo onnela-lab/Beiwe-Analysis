@@ -1,8 +1,8 @@
-plot_survey_timing = function(...){
+plot_survey_responsiveness = function(...){
   plot_filename = paste(output_filepath,"/Results/Group/survey_responsiveness.pdf", sep="")
   pdf(plot_filename,width=8,height=6)
   
-  timings = readRDS(paste(output_filepath, "/Processed_Data/Group/survey_timings.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
+  timings = readRDS(paste(output_filepath, "/Processed_Data/Group/survey_responsiveness.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
   
   patient_names = timings %>% data.frame %>% dplyr::select(Person) %>% unique %>% unlist %>% as.character %>% sort
   dark_colors = cols(length(patient_names),transparency=1-light_alpha)

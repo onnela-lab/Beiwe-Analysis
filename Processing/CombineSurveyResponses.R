@@ -11,8 +11,15 @@
 # groupings[[6]] = c(3,4,5,7,10,11,12,14,21,22,23)
 
 #CombineSurveyResponses(fileloc,filename,srvyinds,groupings,labels)
-CombineSurveyResponses = function(fileloc,filename,srvyinds,groupings,labels){
-  dat=read.csv(paste(fileloc,filename,sep="/"),stringsAsFactors=FALSE,header=TRUE,sep="\t")
+combine_survey_responses = function(srvyinds,groupings,labels){
+  featurefile=paste(output_filepath,"/Processed_data","/Group",sep="")
+  filename=paste("feature_matrix_clean_",daysback,"daycarry.rds",sep="")
+  outfilename=paste("feature_matrix_clean_",daysback,"daycarry_combined.rds",sep="")
+  outtxtname=paste("feature_matrix_clean_",daysback,"daycarry_combined.txt",sep="")
+  infilename=paste(featurefile,filename,sep="/")
+  if(!file.exists(infilename)){return(NULL)}
+  dat=readRDS(infilename)[[1]]
+  #dat=read.csv(paste(fileloc,filename,sep="/"),stringsAsFactors=FALSE,header=TRUE,sep="\t")
   outmat = cbind(dat[,1:2],matrix(NA,ncol=length(groupings),nrow=nrow(dat),dimnames=list(NULL,labels)),dat[,(max(srvyinds)+1):ncol(dat)])
   for(j in 1:length(groupings)){
     INDsPICK = groupings[[j]]
@@ -23,5 +30,6 @@ CombineSurveyResponses = function(fileloc,filename,srvyinds,groupings,labels){
       }
     }
   }
-  write.table(outmat,file=paste(fileloc,"/",strsplit(filename,split='\\.')[[1]][1],"COMBINED.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
+  saveRDS(list(outmat),paste(featurefile,outfilename,sep="/"))
+  write.table(outmat,file=paste(featurefile,outtxtname,sep="/"),sep="\t",quote=FALSE,row.names=FALSE)
 }

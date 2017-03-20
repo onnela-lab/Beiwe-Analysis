@@ -3,7 +3,6 @@ plot_survey_completion = function(...){
   plot_filename = paste(output_filepath,"/Results/Group/survey_completion.pdf", sep="")
   pdf(plot_filename,width=8,height=6)
   
-  patient_names = list.files(data_filepath)[-grep("\\.",list.files(data_filepath))]
   surveys = list()
   for(patient_name in patient_names){
     patient_survey_filename = paste(output_filepath, "/Preprocessed_Data/Individual/",patient_name, "/survey_data.rds",sep="")

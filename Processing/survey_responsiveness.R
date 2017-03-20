@@ -1,6 +1,4 @@
 survey_responsiveness = function(...){
-  
-  patient_names = list.files(data_filepath)[-grep("\\.",list.files(data_filepath))]
   total = as.data.frame(matrix(NA,10000,5))
   colnames(total) = c("Person","Survey_ID","Notified","Present","Submitted")
   j=1
@@ -66,5 +64,5 @@ survey_responsiveness = function(...){
   for(column in c("Notified","Present","Submitted"))
     curated_total[,column] = as.numeric(as.character(curated_total[,column]))
   
-  saveRDS(curated_total, paste(output_filepath, "/Processed_Data/Group/surveys_responsiveness.rds", sep=""))
+  saveRDS(curated_total, paste(output_filepath, "/Processed_Data/Group/survey_responsiveness.rds", sep=""))
 }
