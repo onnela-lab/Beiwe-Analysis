@@ -2,10 +2,11 @@
 #plotname="DataCollectionPlot-12-12-16.pdf"
 
 ## This file requires GPS_preprocessing to be run first.
-DataCollectionPlots = function(fildir,plotname){  
-  SIDs=lapply(strsplit(list.dirs(fildir,recursive=FALSE),"/"),function(x) x[length(x)])
+daily_adherence_grid = function(...){
+  plotname="daily_adherence_grid.pdf"
+  SIDs=patient_names
   survey_IDs_v=c()
-  
+  seconds_per_day=60*60*24
   tmin_glob=10^10
   tmax_glob=0
   maxdur = 0
@@ -18,17 +19,23 @@ DataCollectionPlots = function(fildir,plotname){
     gpsvals=NULL
     surveydates_ls=NULL
     ## read in GPS missing data dates and amounts
-    filname=paste(fildir,SIDs[[i]],"gps",paste("MobFeatMat_",SIDs[[i]],".txt",sep=""),sep="/")
-    if(file.exists(filname)){
+#    filname=paste(homedir,"Preprocessed_data",SIDs[[i]],"gps",paste("MobFeatMat_",SIDs[[i]],".txt",sep=""),sep="/")
+#    filname=paste(homedir,"Processed_data",SIDs[[i]],paste("MobFeatures_",SIDs[i],".Rdata",sep=""),sep="/")    
+    patient_output_filepath = paste(output_filepath,"/Processed_Data","/Individual/",SIDs[i],"/MobFeatures_",SIDs[i],".rds",sep="")
+    if(file.exists(patient_output_filepath)){
       gpsvals=list()
-      mobmat=read.table(filname,header=T)
+      #mobmat=read.table(filname,header=T)
+      #load(filname)
+      inlist=readRDS(patient_output_filepath)
+      featavg=inlist[[4]]
+      mobmat = data.frame(featavg)
       gpsvals[['gpsmis']]=mobmat$MinsMissing
       gpsvals[['gpsht']]=mobmat$Hometime
       gpsvals[['gpsdt']]=mobmat$DistTravelled
       gpsvals[['gpsmhd']]=mobmat$MaxHomeDist
       gpsvals[['gpsslv']]=mobmat$SigLocsVisited
       gpsvals[['gpsrtn']]=mobmat$CircdnRtn
-      gpsdates=as.character(mobmat$Date)
+      gpsdates=as.character(row.names(mobmat))
       tmin=min(as.numeric(as.POSIXct(gpsdates,origin="1970-01-01")))
       tmax=max(as.numeric(as.POSIXct(gpsdates,origin="1970-01-01")))
     }else{
@@ -38,7 +45,7 @@ DataCollectionPlots = function(fildir,plotname){
       tmax=NULL
     }
     ## Read in dates where surveys are taken 
-    dirname=paste(fildir,SIDs[[i]],"survey_answers",sep="/")
+    dirname=paste(data_filepath,SIDs[i],"survey_answers",sep="/")
     if(file.exists(dirname)){
       surveydates_ls=list()
       survey_IDs=lapply(strsplit(list.dirs(dirname,recursive=FALSE),"/"),function(x) x[length(x)])
@@ -66,7 +73,7 @@ DataCollectionPlots = function(fildir,plotname){
       surveydates_ls=NULL
     } 
     ### read in call data
-    calldirname=paste(fildir,SIDs[[i]],"calls",sep="/")
+    calldirname=paste(data_filepath,SIDs[i],"calls",sep="/")
     if(file.exists(calldirname)){
       calldur_ls=list()
       callmis_ls=list()
@@ -98,7 +105,7 @@ DataCollectionPlots = function(fildir,plotname){
         }
       }
       ### read in text data
-      textdirname=paste(fildir,SIDs[[i]],"texts",sep="/")
+      textdirname=paste(data_filepath,SIDs[i],"texts",sep="/")
       if(file.exists(textdirname)){
         # # sent, # received, length sent, length received
         filelist <- list.files(path=textdirname,pattern = "\\.csv$")
@@ -140,7 +147,7 @@ DataCollectionPlots = function(fildir,plotname){
       calldur_ls=NULL
     }
     ## add all data to IDvals master list
-    IDvals[[SIDs[[i]]]]=list('gpsvals'=gpsvals,'gpsdates'=gpsdates,'surveydates_ls'=surveydates_ls,'calldur_ls'=calldur_ls,'callmis_ls'=callmis_ls,'texts_ls'=texts_ls,'tmin'=tmin,'tmax'=tmax)
+    IDvals[[SIDs[i]]]=list('gpsvals'=gpsvals,'gpsdates'=gpsdates,'surveydates_ls'=surveydates_ls,'calldur_ls'=calldur_ls,'callmis_ls'=callmis_ls,'texts_ls'=texts_ls,'tmin'=tmin,'tmax'=tmax)
   }
   
   rowlabels=c(paste("SurveyID:",survey_IDs_v),"GPS amount recorded","Home time", "Distance travelled","Max distance from home","# Significant locations visited","Circadian routine","Call duration","# missed calls","# texts sent","Total length of texts sent","# texts received","Total length of texts received")
@@ -149,25 +156,25 @@ DataCollectionPlots = function(fildir,plotname){
   bufferlines=3
   nvals=length(survey_IDs_v)+1+1+6+4+bufferlines
   
-  
-  pdf(paste(fildir,plotname,sep="/"),width=plotw,height=ploth)
-  
+  outdirplot=paste(output_filepath,"Results","Group",sep="/")
+  pdf(paste(outdirplot,plotname,sep="/"),width=plotw,height=ploth)
+
   for(k in 1:length(SIDs)){
     par(mai=c(0,0,0,0))
-    surveydates_ls = IDvals[[SIDs[[k]]]]$surveydates_ls
-    gpsdates = IDvals[[SIDs[[k]]]]$gpsdates
-    gpsvals = IDvals[[SIDs[[k]]]]$gpsvals
-    calldur_ls=IDvals[[SIDs[[k]]]]$calldur_ls
-    callmis_ls=IDvals[[SIDs[[k]]]]$callmis_ls
-    texts_ls=IDvals[[SIDs[[k]]]]$texts_ls
-    tmin =IDvals[[SIDs[[k]]]]$tmin 
-    tmax=IDvals[[SIDs[[k]]]]$tmax
+    surveydates_ls = IDvals[[SIDs[k]]]$surveydates_ls
+    gpsdates = IDvals[[SIDs[k]]]$gpsdates
+    gpsvals = IDvals[[SIDs[k]]]$gpsvals
+    calldur_ls=IDvals[[SIDs[k]]]$calldur_ls
+    callmis_ls=IDvals[[SIDs[k]]]$callmis_ls
+    texts_ls=IDvals[[SIDs[k]]]$texts_ls
+    tmin =IDvals[[SIDs[k]]]$tmin 
+    tmax=IDvals[[SIDs[k]]]$tmax
     if(is.null(tmin) || is.null(tmax)){
       next
     }
     xlimvals = c(-.2*(tmax-tmin) / seconds_per_day,(tmax-tmin) / seconds_per_day)
     plot(NA,ylim=c(-1,nvals),xlim=xlimvals,bty="n",xaxt="n",yaxt="n",xlab="",ylab="",main="",asp=1)
-    text(mean(xlimvals),nvals,paste("Subject ID:",SIDs[[k]]))
+    text(mean(xlimvals),nvals,paste("Subject ID:",SIDs[k]))
     for(j in 1:length(rowlabels)){
       text(0,j,rowlabels[j],pos=2,cex=.4)
     }
