@@ -37,11 +37,10 @@ if(length(nonfolders)>0){  ### if you don't do this check, in if length(nonfolde
   patient_names = list.files(data_filepath)
 }
 
-counter=0
+
 for(patient_name in patient_names){
   print(patient_name)
-  counter=counter+1
-  if(counter<7){next}
+
   
   # Preprocess Data
   
