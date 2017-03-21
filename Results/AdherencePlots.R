@@ -326,11 +326,11 @@ daily_adherence_grid = function(...){
       eps=.5
       yval=length(survey_IDs_v)+5+4
 	  
-	  if(!is.null(texts_ls)&& !is.null(names(texts_ls))){
+	  if(!is.null(texts_ls)&& length(texts_ls)>0){
        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
      }
 	  
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
         numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
         if(numsnt==0){
           catsnt=0
@@ -357,10 +357,10 @@ daily_adherence_grid = function(...){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+5
-      if(!is.null(texts_ls)){
+      if(!is.null(texts_ls) && length(texts_ls)>0){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
         dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][3]
         if(dursnt==0){
           catdur=0
@@ -387,10 +387,10 @@ daily_adherence_grid = function(...){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+6
-      if(!is.null(texts_ls)){
+      if(!is.null(texts_ls) && length(texts_ls)>0){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)      
       }
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
         numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][2]
         if(numsnt==0){
           catsnt=0
@@ -417,10 +417,10 @@ daily_adherence_grid = function(...){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+7
-      if(!is.null(texts_ls)){
+      if(!is.null(texts_ls) && length(texts_ls)>0){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
         dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][4]
         if(is.na(dursnt) || dursnt==0){
           catdur=0
