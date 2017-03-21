@@ -325,9 +325,11 @@ daily_adherence_grid = function(...){
       xval=j
       eps=.5
       yval=length(survey_IDs_v)+5+4
-      if(!is.null(texts_ls)){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-      }
+	  
+	  if(!is.null(texts_ls)&& !is.null(names(texts_ls))){
+       textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
+     }
+	  
       if(!is.null(texts_ls) && length(which(textxvals==j))>0){
         numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
         if(numsnt==0){

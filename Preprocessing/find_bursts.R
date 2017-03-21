@@ -10,7 +10,7 @@ find_bursts = function(patient_name,
   patient_data_filename_RDS = paste(patient_data_filepath, "/", stream, "_bursts.rds",sep="")
   
   if(file.exists(patient_data_filename_RDS)){
-  if(verbose) cat("Bursts file already exists.\n")
+  if(verbose) cat(paste(stream, "bursts file already exists.\n"))
   }else{
     system(paste("python", code_filepath, data_filepath, patient_data_filename_TXT, patient_name, stream, millisecond_divider))
 	data = read.csv2(patient_data_filename_TXT, sep=",", header=T)

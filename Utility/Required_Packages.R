@@ -1,5 +1,7 @@
 library(Rcpp)
 library(RcppArmadillo)
+library(mvtnorm)
+library(Matrix)
 library(MCMCpack)
 library(VGAM)
 library(stringr)
@@ -11,3 +13,4 @@ library(purrr)
 library(tibble)
 library(lme4)
 detach("package:plyr", unload=TRUE)
+

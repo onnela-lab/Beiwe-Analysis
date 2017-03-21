@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 initialize_output_directory = function(...){
   output_names = c("Preprocessed_Data", "Processed_Data", "Results")  
   for(output_name in output_names){
@@ -9,15 +8,6 @@ initialize_output_directory = function(...){
       if(!file.exists(individual_filepath)) dir.create(individual_filepath, recursive = TRUE)
     }
   }
-=======
-initialize_output_directory = function(data_filepath, output_filepath){
-  output_names = c("Preprocessed_Data", "Processed_Data", "Results")
-  nonfolders=grep("\\.",list.files(data_filepath)) 
-  if(length(nonfolders)>0){  ### if you don't do this check, in if length(nonfolders)==0 will make patient_names empty
-    patient_names = list.files(data_filepath)[-nonfolders]
-  }else{
-    patient_names = list.files(data_filepath)
-  }
   
   for(output_name in output_names){
     group_filepath = paste(output_filepath,output_name,"Group",sep="/")
@@ -27,5 +17,4 @@ initialize_output_directory = function(data_filepath, output_filepath){
       if(!file.exists(individual_filepath)) dir.create(individual_filepath, recursive = TRUE)
     }
   }
->>>>>>> origin/master
 }

@@ -271,7 +271,7 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
   if(!is.null(SVYvec)){
     ylabels=c(ylabels,"Surveys")
   }
-  pdf(paste(homedir,"Results","Individual",ID,paste("DataCollectionTracks-",ID,".pdf",sep=""),sep="/"),width=6,height=4)
+  pdf(paste(homedir,"Results","Individual",ID,"DataCollectionTracks.pdf",sep="/"),width=6,height=4)
   for(ii in 1:nweeks){
     itrvl=tmin+c(ii-1,ii)*1000*60*60*24*7
     # Get accelerometer submat for this week
@@ -517,5 +517,3 @@ ContinuousDataCollectionTracks = function(patient_name,ACCbinsize,tz="",...){
   DZEmat = DZEDataCollection(data_filepath,patient_name,ACCmat,GPSmat,SCNmat)
   PlotContinuousDataCollectionTracks(output_filepath,patient_name,ACCmat,GPSmat,SCNmat,DZEmat,SVYvec,tz)
 }
-
-
