@@ -4,9 +4,6 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration){
   
   bursts   = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_bursts.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
   coverage = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_coverage.rds", sep="")) %>% data.frame
-
-  
-  par(mgp=c(2.5,1,0),cex.main=1.2,cex.lab=1.2)
   
   patients = bursts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character %>% sort
   dark_colors = cols(length(patients),transparency=1-light_alpha)
@@ -20,6 +17,7 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration){
   x_range = c(min(unlist(bursts["zeroed"])), round(max(unlist(bursts["zeroed"]))*1.3))
   
   pdf(plot_filename,width=8,height=6)
+  par(mgp=c(2.5,1,0),cex.main=1.5,cex.lab=1.5)
   
   plot(log10(1+bursts[,"num_bursts"]), col=NA,xlab="Unique Daily Measurements",xlim=c(1,nrow(bursts)*1.3),
     main=paste("Number of Bursts Per Day"," (",stream,")",sep=""), ylab="Number of Bursts",yaxt="n",ylim=c(0,4))
@@ -33,7 +31,7 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration){
        xlab="Day",ylab="Number of Bursts",main=paste("Number of Bursts Per Day"," (",stream,")",sep=""))
   axis(2,at=log10(1+10^(0:4)),labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4)))
   points(unlist(bursts[,"zeroed"]),log10(1+unlist(bursts[,"num_bursts"])),pch=16,col=person_lite_colors)
-  lines(lowess(bursts[,"zeroed"],log10(1+bursts[,"num_bursts"])),col="red",lwd=2,lty=2)
+  lines(lowess(bursts[,"zeroed"],log10(1+bursts[,"num_bursts"])),col="red",lwd=3.5,lty=2)
   abline(h=log10(1+seconds_per_day/(burst_duration+break_duration)),lwd=2,lty=1,col=dark_line_col)
   legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
   box()
@@ -50,7 +48,7 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration){
        yaxt = "n",xlab="Day",ylab="Average Frequency Per Burst",main=paste("Average Frequency Per Burst"," (",stream,")",sep=""))
   axis(2,at=log10(.1+c(0,10^(0:4))),labels=c(0, 1, expression(10^1),expression(10^2),expression(10^3),expression(10^4)))
   points(unlist(bursts[,"zeroed"]),log10(.1+bursts[,"avg_within_burst_frequency"]),pch=16,col=person_lite_colors)
-  lines(lowess(bursts[,"zeroed"],log10(.1+bursts[,"avg_within_burst_frequency"]),f=.3),col="red",lwd=2,lty=2)
+  lines(lowess(bursts[,"zeroed"],log10(.1+bursts[,"avg_within_burst_frequency"]),f=.3),col="red",lwd=3.5,lty=2)
   abline(h=log10(.1+frequency),lwd=2,lty=1,col=dark_line_col)
   legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
   box()
@@ -67,7 +65,7 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration){
        yaxt = "n",xlab="Day",ylab="Average Duration Per Burst",main=paste("Average Duration per Burst\nOver Time"," (",stream,")",sep=""))
   axis(2,at=log10(1+10^(0:4)),labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4)))
   points(bursts[,"zeroed"],log10(1+bursts[,"avg_within_burst_duration"]),pch=16,col=person_lite_colors)
-  lines(lowess(bursts[,"zeroed"],log10(1+bursts[,"avg_within_burst_duration"])),col="red",lwd=2,lty=2)
+  lines(lowess(bursts[,"zeroed"],log10(1+bursts[,"avg_within_burst_duration"])),col="red",lwd=3.5,lty=2)
   abline(h=log10(burst_duration),lwd=2,lty=1,col=dark_line_col)
   legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
   box()
@@ -85,7 +83,7 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration){
        main=paste("Average Duration Between Bursts\nOver Time"," (",stream,")",sep=""))
   axis(2,at=log10(1+10^(0:6)),labels=c(1, expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5),expression(10^6)))
   points(bursts[,"zeroed"],log10(1+bursts[,"avg_between_burst_duration"]-bursts[,"avg_within_burst_duration"]), pch=16,col=person_lite_colors)
-  lines(lowess(bursts[,"zeroed"],log10(1+bursts[,"avg_between_burst_duration"]-bursts[,"avg_within_burst_duration"])),col="red",lwd=2,lty=2)
+  lines(lowess(bursts[,"zeroed"],log10(1+bursts[,"avg_between_burst_duration"]-bursts[,"avg_within_burst_duration"])),col="red",lwd=3.5,lty=2)
   abline(h=log10(1+break_duration),lwd=2,lty=1,col=dark_line_col)
   legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
   box()
@@ -98,7 +96,6 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration){
   legend("bottomleft",ncol=2,pch=16,legend=c("Active Patients","All Patients"),col=c("black","gray"),bg="white")
   box()
   
-  dev.off()
   dev.off()
 }
 

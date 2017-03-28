@@ -1,6 +1,7 @@
 plot_survey_responsiveness = function(...){
   plot_filename = paste(output_filepath,"/Results/Group/survey_responsiveness.pdf", sep="")
   pdf(plot_filename,width=8,height=6)
+  par(mgp=c(2.5,1,0),cex.main=1.5,cex.lab=1.5)
   
   timings = readRDS(paste(output_filepath, "/Processed_Data/Group/survey_responsiveness.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
   
@@ -41,7 +42,7 @@ plot_survey_responsiveness = function(...){
        col=person_lite_colors,main="Time to First Response",#xaxt="n",
        xlab="Day",ylab="Time to First Response (Seconds)",yaxt="n",ylim=c(0,6))
   #axis(1, at=date_seq, label = as.Date(as.POSIXct(date_seq,origin="1970-01-01")))
-  lines(lowess(timings[,"zeroed"], time_to_response,f=.9),col="red",lwd=2,lty=2)
+  lines(lowess(timings[,"zeroed"], time_to_response,f=.9),col="red",lwd=3.5,lty=2)
   axis(2,at=0:6,labels=c(expression(1),expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5),expression(10^6)))
   legend("topright",legend=patient_names, col=dark_colors, pch=16,ncol=1,bg="white")
   
@@ -57,7 +58,7 @@ plot_survey_responsiveness = function(...){
        col=person_lite_colors,xlim=x_range,#xaxt="n",
        xlab="Day",ylab="Time to First Response (Seconds)",yaxt="n",ylim=c(0,6))
   #axis(1, at=date_seq, label = as.Date(as.POSIXct(date_seq,origin="1970-01-01")))
-  lines(lowess(timings[,"zeroed"], time_to_completion),col="red",lwd=2,lty=2)
+  lines(lowess(timings[,"zeroed"], time_to_completion),col="red",lwd=3.5,lty=2)
   axis(2,at=0:6,labels=c(expression(1),expression(10^1),expression(10^2),expression(10^3),expression(10^4),expression(10^5),expression(10^6)))
   legend("topright",legend=patient_names, col=dark_colors, pch=16,ncol=1,bg="white")
   

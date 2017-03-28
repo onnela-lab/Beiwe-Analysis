@@ -77,7 +77,7 @@ CreateMobilityFeatures = function(patient_name, ...){
   
   #output feature file
   patient_output_filepath = paste(output_filepath, "/Processed_Data/Individual/", patient_name, sep="")
-  patient_output_filename = paste(patient_output_filepath,"/MobFeatures_",patient_name,".rds",sep="")
+  patient_output_filename = paste(patient_output_filepath,"/MobFeatures.rds",sep="")
   
   nreps = length(mobmatsims)
   lsmf = list()
@@ -127,7 +127,7 @@ daily_features = function(...){
     mobmat=NULL
     aIDs=list()
     patient_input_filepath = paste(output_filepath, "/Processed_Data/Individual/", patient_id, sep="")
-    patient_input_filename = paste(patient_input_filepath,"/MobFeatures_",patient_id,".rds",sep="")
+    patient_input_filename = paste(patient_input_filepath,"/MobFeatures.rds",sep="")
     if(file.exists(patient_input_filename)){
       inlist=readRDS(patient_input_filename)
       #list(outmat,lsmf,lssigloc,featavg)

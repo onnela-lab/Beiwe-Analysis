@@ -359,7 +359,7 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
     if(!is.null(ACCmat)){
       if(!is.null(subACCmat)){
         for(i in 1:nrow(subACCmat)){
-          polygon(c(subACCmat[i,],rev(subACCmat[i,])),c(yc,yc,yc+1,yc+1),col="Brown",border=NA)
+          polygon(c(subACCmat[i,],rev(subACCmat[i,])),c(yc,yc,yc+1,yc+1),col=stream_colors[6],border=NA)
         }
       }
       yc=yc+1
@@ -367,7 +367,7 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
     if(!is.null(GPSmat)){
       if(!is.null(subGPSmat)){
         for(i in 1:nrow(subGPSmat)){
-          polygon(c(subGPSmat[i,],rev(subGPSmat[i,])),c(yc,yc,yc+1,yc+1),col="Purple",border=NA)
+          polygon(c(subGPSmat[i,],rev(subGPSmat[i,])),c(yc,yc,yc+1,yc+1),col=stream_colors[5],border=NA)
         }
       }
       yc=yc+1
@@ -375,7 +375,7 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
     if(!is.null(SCNmat)){
       if(!is.null(subSCNmat)){
         for(i in 1:nrow(subSCNmat)){
-          polygon(c(subSCNmat[i,],rev(subSCNmat[i,])),c(yc,yc,yc+1,yc+1),col="Black",border=NA)
+          polygon(c(subSCNmat[i,],rev(subSCNmat[i,])),c(yc,yc,yc+1,yc+1),col=stream_colors[4],border=NA)
         }
       }
       yc=yc+1
@@ -383,7 +383,7 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
     if(!is.null(DZEmat)){
       if(!is.null(subDZEmat)){
         for(i in 1:nrow(subDZEmat)){
-          polygon(c(subDZEmat[i,],rev(subDZEmat[i,])),c(yc,yc,yc+1,yc+1),col="Blue",border=NA)
+          polygon(c(subDZEmat[i,],rev(subDZEmat[i,])),c(yc,yc,yc+1,yc+1),col=stream_colors[7],border=NA)
         }
       }
       yc=yc+1
@@ -391,7 +391,8 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
     if(!is.null(SVYvec)){
       if(!is.null(subSVYvec)){
         for(i in 1:length(subSVYvec)){
-          polygon(c(subSVYvec[i],subSVYvec[i]+30000,subSVYvec[i]+30000,subSVYvec[i]),c(yc,yc,yc+1,yc+1),col="Orange",border=NA)
+          polygon(subSVYvec[i]+(itrvl[2]-itrvl[1])*.001*c(-1,1,1,-1),c(yc,yc,yc+1,yc+1),col=stream_colors[1],border=NA)
+		  #lines(rep(subSVYvec[i],2),yc+0:1,col=stream_colors[5],lwd=2)
         }
       }
       yc=yc+1

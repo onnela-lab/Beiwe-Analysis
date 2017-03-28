@@ -13,15 +13,16 @@ daily_adherence_grid = function(...){
   IDvals = list()
   lenvals = list()
   for(i in 1:length(SIDs)){
+    print(SIDs[i])
     calldur_ls=NULL
     callmis_ls=NULL
     texts_ls=NULL
     gpsvals=NULL
     surveydates_ls=NULL
     ## read in GPS missing data dates and amounts
-#    filname=paste(homedir,"Preprocessed_data",SIDs[[i]],"gps",paste("MobFeatMat_",SIDs[[i]],".txt",sep=""),sep="/")
-#    filname=paste(homedir,"Processed_data",SIDs[[i]],paste("MobFeatures_",SIDs[i],".Rdata",sep=""),sep="/")    
-    patient_output_filepath = paste(output_filepath,"/Processed_Data","/Individual/",SIDs[i],"/MobFeatures_",SIDs[i],".rds",sep="")
+    #    filname=paste(homedir,"Preprocessed_data",SIDs[[i]],"gps",paste("MobFeatMat_",SIDs[[i]],".txt",sep=""),sep="/")
+    #    filname=paste(homedir,"Processed_data",SIDs[[i]],paste("MobFeatures_",SIDs[i],".Rdata",sep=""),sep="/")    
+    patient_output_filepath = paste(output_filepath,"/Processed_Data","/Individual/",SIDs[i],"/MobFeatures.rds",sep="")
     if(file.exists(patient_output_filepath)){
       gpsvals=list()
       #mobmat=read.table(filname,header=T)
@@ -81,7 +82,7 @@ daily_adherence_grid = function(...){
       # call duration
       # calls missed    
       filelist <- list.files(path=calldirname,pattern = "\\.csv$")
-      for(j in 1:length(filelist)){
+      for(j in seq_along(filelist)){
         x=read.csv(paste(calldirname,filelist[j],sep="/"),fileEncoding="UTF-8")
         for(k in 1:nrow(x)){
           curdate=as.character(as.POSIXct(x[k,]$UTC.time,tz="",origin='1970-01-01'))
@@ -109,7 +110,7 @@ daily_adherence_grid = function(...){
       if(file.exists(textdirname)){
         # # sent, # received, length sent, length received
         filelist <- list.files(path=textdirname,pattern = "\\.csv$")
-        for(j in 1:length(filelist)){
+        for(j in seq_along(filelist)){
           x=read.csv(paste(textdirname,filelist[j],sep="/"),fileEncoding="UTF-8")
           for(k in 1:nrow(x)){
             curdate=as.character(as.POSIXct(x[k,]$UTC.time,tz="",origin='1970-01-01'))
@@ -149,8 +150,7 @@ daily_adherence_grid = function(...){
     ## add all data to IDvals master list
     IDvals[[SIDs[i]]]=list('gpsvals'=gpsvals,'gpsdates'=gpsdates,'surveydates_ls'=surveydates_ls,'calldur_ls'=calldur_ls,'callmis_ls'=callmis_ls,'texts_ls'=texts_ls,'tmin'=tmin,'tmax'=tmax)
   }
-  
-  rowlabels=c(paste("SurveyID:",survey_IDs_v),"GPS amount recorded","Home time", "Distance travelled","Max distance from home","# Significant locations visited","Circadian routine","Call duration","# missed calls","# texts sent","Total length of texts sent","# texts received","Total length of texts received")
+  rowlabels=c("GPS amount recorded","Home time", "Distance travelled","Max distance from home","# Significant locations visited","Circadian routine","# texts sent","Total length of texts sent","# texts received","Total length of texts received","Call duration","# missed calls",paste("SurveyID:",survey_IDs_v))
   plotw=8
   ploth=4
   bufferlines=3
@@ -158,7 +158,7 @@ daily_adherence_grid = function(...){
   
   outdirplot=paste(output_filepath,"Results","Group",sep="/")
   pdf(paste(outdirplot,plotname,sep="/"),width=plotw,height=ploth)
-
+  
   for(k in 1:length(SIDs)){
     par(mai=c(0,0,0,0))
     surveydates_ls = IDvals[[SIDs[k]]]$surveydates_ls
@@ -184,19 +184,19 @@ daily_adherence_grid = function(...){
       }
     }
     ## survey answers
-    for(i in 1:length(survey_IDs_v)){
+    for(i in seq_along(survey_IDs_v)){
       for(j in 0:((tmax-tmin) / seconds_per_day)){
         if(length(which(names(surveydates_ls)==survey_IDs_v[i]))>0){
           IDsurvey=which(round((as.numeric(as.POSIXct(surveydates_ls[[survey_IDs_v[i]]],origin="1970-01-01"))-tmin) / seconds_per_day)==j)
+          yval=i+12 #############################################################################################
           if(length(IDsurvey)>0){
             xval=j
             eps=.5
-            yval=i
-            polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(1,.5,0),ink_depth=.8),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1) 
+            
+            polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[1]),ink_depth=1),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1) 
           }else{
             xval=j
             eps=.5
-            yval=i        
             polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1) 
           }        
         }else{
@@ -216,36 +216,38 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-      yval=length(survey_IDs_v)+1
+      yval=1 #############################################################################################
       if(!is.null(gpsxvals) && length(which(gpsxvals==j))>0){
         IDgps=which(gpsxvals==j)
         if(is.numeric(gpsvals[['gpsmis']][IDgps])){
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(1,0,1),ink_depth=(1-gpsvals[['gpsmis']][IDgps]/1440)^.2),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
-        }else{
+          #polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(1,0,1),ink_depth=(1-gpsvals[['gpsmis']][IDgps]/1440)^.2),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[5]),ink_depth=(1-gpsvals[['gpsmis']][IDgps]/1440)^.2),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
+          
+          }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
         }
         if(is.numeric(gpsvals[['gpsht']][IDgps])){
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+1,yval+eps+1,yval+eps+1,yval-eps+1),col=light_color(c(1,0,1),ink_depth=(gpsvals[['gpsht']][IDgps]/1440)^1),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+1,yval+eps+1,yval+eps+1,yval-eps+1),col=light_color(rgb2col(stream_colors[5]),ink_depth=(gpsvals[['gpsht']][IDgps]/1440)^1),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+1,yval+eps+1,yval+eps+1,yval-eps+1),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
         if(is.numeric(gpsvals[['gpsdt']][IDgps])){
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+2,yval+eps+2,yval+eps+2,yval-eps+2),col=light_color(c(1,0,1),ink_depth=min((gpsvals[['gpsdt']][IDgps]/200000)^.5,1)),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+2,yval+eps+2,yval+eps+2,yval-eps+2),col=light_color(rgb2col(stream_colors[5]),ink_depth=min((gpsvals[['gpsdt']][IDgps]/200000)^.5,1)),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+2,yval+eps+2,yval+eps+2,yval-eps+2),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
         if(is.numeric(gpsvals[['gpsmhd']][IDgps])){
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+3,yval+eps+3,yval+eps+3,yval-eps+3),col=light_color(c(1,0,1),ink_depth=min((gpsvals[['gpsmhd']][IDgps]/100000)^.5,1)),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+3,yval+eps+3,yval+eps+3,yval-eps+3),col=light_color(rgb2col(stream_colors[5]),ink_depth=min((gpsvals[['gpsmhd']][IDgps]/100000)^.5,1)),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+3,yval+eps+3,yval+eps+3,yval-eps+3),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
         }
         if(is.numeric(gpsvals[['gpsslv']][IDgps])){
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+4,yval+eps+4,yval+eps+4,yval-eps+4),col=light_color(c(1,0,1),ink_depth=min((gpsvals[['gpsslv']][IDgps]/6),1)),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+4,yval+eps+4,yval+eps+4,yval-eps+4),col=light_color(rgb2col(stream_colors[5]),ink_depth=min((gpsvals[['gpsslv']][IDgps]/6),1)),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+4,yval+eps+4,yval+eps+4,yval-eps+4),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
         if(is.numeric(gpsvals[['gpsrtn']][IDgps])){
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+5,yval+eps+5,yval+eps+5,yval-eps+5),col=light_color(c(1,0,1),ink_depth=gpsvals[['gpsrtn']][IDgps]),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)      
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+5,yval+eps+5,yval+eps+5,yval-eps+5),col=light_color(rgb2col(stream_colors[5]),ink_depth=gpsvals[['gpsrtn']][IDgps]),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)      
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps+5,yval+eps+5,yval+eps+5,yval-eps+5),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
@@ -262,7 +264,7 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-      yval=length(survey_IDs_v)+5+2
+      yval=11 #############################################################################################
       if(!is.null(calldur_ls)){
         calldurxvals=round((as.numeric(as.POSIXct(names(calldur_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
@@ -284,7 +286,7 @@ daily_adherence_grid = function(...){
         }else{
           catdur=6
         }
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(0,0,1),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[2]),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }else{
         polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }
@@ -293,7 +295,7 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-      yval=length(survey_IDs_v)+5+3
+      yval= 12 #############################################################################################
       if(!is.null(callmis_ls)){
         callmisxvals=round((as.numeric(as.POSIXct(names(callmis_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
       }
@@ -315,7 +317,7 @@ daily_adherence_grid = function(...){
         }else{
           catmis=6
         }
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(0,0,1),ink_depth=catmis/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[2]),ink_depth=catmis/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }else{
         polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }
@@ -324,122 +326,123 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-      yval=length(survey_IDs_v)+5+4
-	  
-	  if(!is.null(texts_ls)&& !is.null(names(texts_ls))){
-       textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-     }
-	  
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
-        numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
-        if(numsnt==0){
-          catsnt=0
-        }else if(numsnt<6){
-          catsnt=1
-        }else if(numsnt<10){
-          catsnt=2
-        }else if(numsnt<15){
-          catsnt=3
-        }else if(numsnt<20){
-          catsnt=4
-        }else if(numsnt<25){
-          catsnt=5
+      yval=7 #############################################################################################
+      
+      if(!is.null(texts_ls) && !is.null(names(texts_ls))){
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
+        
+        if(length(which(textxvals==j))>0){
+          numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
+          if(numsnt==0){
+            catsnt=0
+          }else if(numsnt<6){
+            catsnt=1
+          }else if(numsnt<10){
+            catsnt=2
+          }else if(numsnt<15){
+            catsnt=3
+          }else if(numsnt<20){
+            catsnt=4
+          }else if(numsnt<25){
+            catsnt=5
+          }else{
+            catsnt=6
+          }
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }else{
-          catsnt=6
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(0,1,0),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-      }else{
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }
     }
     ## length texts sent
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-      yval=length(survey_IDs_v)+5+5
-      if(!is.null(texts_ls)){
+      yval=8 #############################################################################################
+      if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-      }
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
-        dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][3]
-        if(dursnt==0){
-          catdur=0
-        }else if(dursnt<76){
-          catdur=1
-        }else if(dursnt<151){
-          catdur=2
-        }else if(dursnt<226){
-          catdur=3
-        }else if(dursnt<301){
-          catdur=4
-        }else if(dursnt<376){
-          catdur=5
+        if(length(which(textxvals==j))>0){
+          dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][3]
+          if(dursnt==0){
+            catdur=0
+          }else if(dursnt<76){
+            catdur=1
+          }else if(dursnt<151){
+            catdur=2
+          }else if(dursnt<226){
+            catdur=3
+          }else if(dursnt<301){
+            catdur=4
+          }else if(dursnt<376){
+            catdur=5
+          }else{
+            catdur=6
+          }
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }else{
-          catdur=6
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(0,1,0),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-      }else{
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }
     }
     ## number texts received
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-      yval=length(survey_IDs_v)+5+6
-      if(!is.null(texts_ls)){
+      yval= 9 #############################################################################################
+      if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)      
-      }
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
-        numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][2]
-        if(numsnt==0){
-          catsnt=0
-        }else if(numsnt<6){
-          catsnt=1
-        }else if(numsnt<10){
-          catsnt=2
-        }else if(numsnt<15){
-          catsnt=3
-        }else if(numsnt<20){
-          catsnt=4
-        }else if(numsnt<25){
-          catsnt=5
+        
+        if(length(which(textxvals==j))>0){
+          numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][2]
+          if(numsnt==0){
+            catsnt=0
+          }else if(numsnt<6){
+            catsnt=1
+          }else if(numsnt<10){
+            catsnt=2
+          }else if(numsnt<15){
+            catsnt=3
+          }else if(numsnt<20){
+            catsnt=4
+          }else if(numsnt<25){
+            catsnt=5
+          }else{
+            catsnt=6
+          }
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }else{
-          catsnt=6
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(0,1,0),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-      }else{
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }
     }
     ## length texts received
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-      yval=length(survey_IDs_v)+5+7
-      if(!is.null(texts_ls)){
+      yval = 10 #############################################################################################
+      if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-      }
-      if(!is.null(texts_ls) && length(which(textxvals==j))>0){
-        dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][4]
-        if(is.na(dursnt) || dursnt==0){
-          catdur=0
-        }else if(dursnt<76){
-          catdur=1
-        }else if(dursnt<151){
-          catdur=2
-        }else if(dursnt<226){
-          catdur=3
-        }else if(dursnt<301){
-          catdur=4
-        }else if(dursnt<376){
-          catdur=5
+        if(length(which(textxvals==j))>0){
+          dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][4]
+          if(is.na(dursnt) || dursnt==0){
+            catdur=0
+          }else if(dursnt<76){
+            catdur=1
+          }else if(dursnt<151){
+            catdur=2
+          }else if(dursnt<226){
+            catdur=3
+          }else if(dursnt<301){
+            catdur=4
+          }else if(dursnt<376){
+            catdur=5
+          }else{
+            catdur=6
+          }
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }else{
-          catdur=6
+          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(0,1,0),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-      }else{
-        polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
       }
     }
     for(j in 0:((tmax-tmin) / seconds_per_day)){
@@ -457,7 +460,7 @@ daily_adherence_grid = function(...){
     }
   }
   #legend("bottomleft",title="Data collected",c("GPS (darker for more data collected)",paste("Survey ID:",survey_IDs_v)),pch=c(15,0,0,0,0,0),col=c("black",col_survey_v),cex=.4,lty=c(NA,NA,NA,NA,NA,NA),lwd=c(1,.2,.2,.2,.2,.2),bty="n")
-  dev.off()  
+  dev.off() 
 }
 
 

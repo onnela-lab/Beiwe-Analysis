@@ -2,6 +2,7 @@ plot_survey_completion = function(...){
   
   plot_filename = paste(output_filepath,"/Results/Group/survey_completion.pdf", sep="")
   pdf(plot_filename,width=8,height=6)
+  par(mgp=c(2.5,1,0),cex.main=1.5,cex.lab=1.5)
   
   surveys = list()
   for(patient_name in patient_names){
@@ -41,7 +42,7 @@ plot_survey_completion = function(...){
   
   plot(surveys_week[,"week"],log10(surveys_week[,"num_surveys"]),yaxt="n",col=person_lite_colors,pch=16,
        xlim=c(0,max(surveys_week[,"week"],na.rm=T)*1.3), xlab="Week", ylab="Surveys Taken",main="Surveys Taken")
-  lines(lowess(surveys_week[,"week"],log10(surveys_week[,"num_surveys"])),col="red",lty=2)
+  lines(lowess(surveys_week[,"week"],log10(surveys_week[,"num_surveys"])),col="red",lwd=3.5, lty=2)
   axis(2,at=log10(c(1,2,3,4,5,15)),label=c(1,2,3,4,5,15))
   axis(2,at=log10(8),label="...",tick=F)
   legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
