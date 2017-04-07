@@ -326,6 +326,7 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
+<<<<<<< HEAD
       yval=7 #############################################################################################
       
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
@@ -349,6 +350,28 @@ daily_adherence_grid = function(...){
             catsnt=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+=======
+      yval=length(survey_IDs_v)+5+4
+	  
+	  if(!is.null(texts_ls)&& length(texts_ls)>0){
+       textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
+     }
+	  
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
+        numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
+        if(numsnt==0){
+          catsnt=0
+        }else if(numsnt<6){
+          catsnt=1
+        }else if(numsnt<10){
+          catsnt=2
+        }else if(numsnt<15){
+          catsnt=3
+        }else if(numsnt<20){
+          catsnt=4
+        }else if(numsnt<25){
+          catsnt=5
+>>>>>>> origin/master
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
@@ -358,6 +381,7 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
+<<<<<<< HEAD
       yval=8 #############################################################################################
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
@@ -379,6 +403,26 @@ daily_adherence_grid = function(...){
             catdur=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+=======
+      yval=length(survey_IDs_v)+5+5
+      if(!is.null(texts_ls) && length(texts_ls)>0){
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
+      }
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
+        dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][3]
+        if(dursnt==0){
+          catdur=0
+        }else if(dursnt<76){
+          catdur=1
+        }else if(dursnt<151){
+          catdur=2
+        }else if(dursnt<226){
+          catdur=3
+        }else if(dursnt<301){
+          catdur=4
+        }else if(dursnt<376){
+          catdur=5
+>>>>>>> origin/master
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
@@ -388,6 +432,7 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
+<<<<<<< HEAD
       yval= 9 #############################################################################################
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)      
@@ -410,6 +455,26 @@ daily_adherence_grid = function(...){
             catsnt=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+=======
+      yval=length(survey_IDs_v)+5+6
+      if(!is.null(texts_ls) && length(texts_ls)>0){
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)      
+      }
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
+        numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][2]
+        if(numsnt==0){
+          catsnt=0
+        }else if(numsnt<6){
+          catsnt=1
+        }else if(numsnt<10){
+          catsnt=2
+        }else if(numsnt<15){
+          catsnt=3
+        }else if(numsnt<20){
+          catsnt=4
+        }else if(numsnt<25){
+          catsnt=5
+>>>>>>> origin/master
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
@@ -419,6 +484,7 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
+<<<<<<< HEAD
       yval = 10 #############################################################################################
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
@@ -440,6 +506,26 @@ daily_adherence_grid = function(...){
             catdur=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
+=======
+      yval=length(survey_IDs_v)+5+7
+      if(!is.null(texts_ls) && length(texts_ls)>0){
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
+      }
+      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
+        dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][4]
+        if(is.na(dursnt) || dursnt==0){
+          catdur=0
+        }else if(dursnt<76){
+          catdur=1
+        }else if(dursnt<151){
+          catdur=2
+        }else if(dursnt<226){
+          catdur=3
+        }else if(dursnt<301){
+          catdur=4
+        }else if(dursnt<376){
+          catdur=5
+>>>>>>> origin/master
         }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
