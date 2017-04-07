@@ -1,4 +1,4 @@
-plot_survey_completion = function(...){
+plot_survey_completion = function(legend = TRUE, ...){
   
   plot_filename = paste(output_filepath,"/Results/Group/survey_completion.pdf", sep="")
   pdf(plot_filename,width=8,height=6)
@@ -29,22 +29,22 @@ plot_survey_completion = function(...){
   patients = surveys %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character %>% sort
   names = surveys %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character
   dark_colors = cols(length(patients),transparency=1-light_alpha)
-  lite_colors = cols(length(patients),transparency=0.8)
+  lite_colors = cols(length(patients),dirtiness=0.8,darkness=.1)
   person_dark_colors = dark_colors[surveys_week %>% data.frame %>% dplyr::select(patient) %>% unlist %>% as.factor %>% as.numeric]
   person_lite_colors = lite_colors[surveys_week %>% data.frame %>% dplyr::select(patient) %>% unlist %>% as.factor %>% as.numeric]
   
   
   plot(log10(surveys_week[,"num_surveys"]),yaxt="n",col=person_dark_colors,pch=16,
-       xlim=c(0,nrow(surveys_week)*1.3),xlab="Week", ylab="Surveys Taken",main="Surveys Taken")
+       xlim=c(0,nrow(surveys_week)*ifelse(legend,1.3,1)),xlab="Week", ylab="Surveys Taken",main="Surveys Taken")
   axis(2,at=log10(c(1,2,3,4,5,15)),label=c(1,2,3,4,5,15))
   axis(2,at=log10(8),label="...",tick=F)
-  legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
+  if(legend) legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
   
   plot(surveys_week[,"week"],log10(surveys_week[,"num_surveys"]),yaxt="n",col=person_lite_colors,pch=16,
-       xlim=c(0,max(surveys_week[,"week"],na.rm=T)*1.3), xlab="Week", ylab="Surveys Taken",main="Surveys Taken")
-  lines(lowess(surveys_week[,"week"],log10(surveys_week[,"num_surveys"])),col="red",lwd=3.5, lty=2)
+       xlim=c(0,max(surveys_week[,"week"],na.rm=T)*ifelse(legend,1.3,1)), xlab="Week", ylab="Surveys Taken",main="Surveys Taken")
+  lines(lowess(surveys_week[,"week"],log10(surveys_week[,"num_surveys"])),col="red",lwd=3.5, lty=lowess_lty)
   axis(2,at=log10(c(1,2,3,4,5,15)),label=c(1,2,3,4,5,15))
   axis(2,at=log10(8),label="...",tick=F)
-  legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
+  if(legend) legend("topright",legend=names, col=dark_colors, pch=16,ncol=1,bg="white")
   dev.off()
 }

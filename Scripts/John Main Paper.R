@@ -22,11 +22,19 @@ gps_burst_duration = 60
 acc_break_duration = 60
 gps_break_duration = 60*10
 
-
-
+plot(1:4,yaxt="n")
 # Source all files
 source(paste(source_filepath, "Utility/Initialize.R",sep="/"))
 
+stream = "accelerometer"
+patient_data_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+patient_data_filename_TXT = paste(patient_data_filepath, "/", stream, "_bursts.txt",sep="")
+code_filepath = paste(source_filepath, "/Preprocessing/find_bursts.py",sep="")
+millisecond_divider = acc_millisecond_divider
+system(paste("python", code_filepath, data_filepath, patient_data_filename_TXT, patient_name, stream, millisecond_divider))
+
+
+system("C:/Python33/python.exe C:/Users/Patrick/Desktop/example.py hi")
 
 ###################################
 ### individual patient analysis ###
@@ -120,18 +128,36 @@ for(i in 1:length(patient_names)){
   anomaly_detection_plot(ID=patient_names[i],Nsurveys=Nsurveys,NoSurvey=FALSE,vertmarks=vertmarks,onesided=TRUE)
 }
 
+cols = function(n,dirtiness=.25, darkness=.2, transparency=0, ...){
+  colors = rainbow(n, ...) 
+  f = function(colors, val) strtoi(paste("0x",substr(colors,2*val, 2*val + 1),sep="")) 
+  rgb = cbind(f(colors, 1),f(colors, 2),f(colors, 3))
+  new_rgba = cbind(floor((rgb+(1-rgb/256)*dirtiness*256)*(1-darkness*dirtiness)),floor(255*(transparency)))
+  if(transparency == 0){
+    new_rgba = new_rgba[,1:3]
+  }else{
+    new_rgba[,4] = round(255*(1-transparency))
+  }
+  CHARS = format(as.hexmode(new_rgba),upper.case=TRUE,width=2)
+  if(n==1){CHARMAT = t(as.matrix(CHARS))}else{CHARMAT = matrix(CHARS,ncol=ncol(new_rgba))}
+  new_colors = apply(CHARMAT ,1,function(strings) paste("#",paste(strings,collapse=""),sep=""))
+  return(new_colors)
+}
+
 
 ###################################
 ####          plotting         ####
 ###################################
 
 daily_adherence_grid()
-plot_data_quality(stream = "accelerometer", acc_frequency, acc_burst_duration, acc_break_duration)
-plot_data_quality(stream = "gps",           gps_frequency, gps_burst_duration, gps_break_duration)
+plot_data_quality(stream = "accelerometer", acc_frequency, acc_burst_duration, acc_break_duration,legend=FALSE)
+plot_data_quality(stream = "gps",           gps_frequency, gps_burst_duration, gps_break_duration,legend=FALSE)
+plot_survey_responsiveness(legend=FALSE)
+plot_survey_completion(legend=FALSE)
+plot_legend("accelerometer")
+plot_legend("gps")
 
-plot_survey_responsiveness()
-plot_survey_completion()
-plot_accelerometer(minutes = 5, fixed_days = 8*7)
+plot_accelerometer(minutes = 5, fixed_days = 8*7, use_patient_name = FALSE)
 
 filters = list(
   All_Questions = get_questions(),
@@ -154,7 +180,7 @@ filters = list(
   Cognitive = c ("Trouble concentrating", "Difficulty thinking clearly", "Feeling Confused or Puzzled"),
   Psychosis = c("Hearing voices or seeing things", "Feeling suspicious", "Difficulty thinking clearly", "Withdrawing from social interaction"),
   #Positive = c("Easily annoyed or irritated", "Hearing voices or seeing things", "Trouble relaxing", "Feeling nervous, scared, or anxious", "Feeling suspicious"),
-  Positive = c("Hearing voices or seeing things","Feeling suspicious","Feeling nervous; scared; or anxious"),
+  Positive = c("Hearing voices or seeing things", "Feeling nervous; scared; or anxious","Feeling suspicious"),
   #Anxiety_and_GAD7 = c("Unable to cope with stress", "Feeling nervous, scared, or anxious", "Worrying too much",  "Feeling bad or guilty about yourself",  "Feeling Confused or Puzzled", "Trouble relaxing",  "Easily annoyed or irritated"),
   Anxiety_and_GAD7 = c("Unable to cope with stress", "Feeling nervous; scared; or anxious", "Worrying too much","Feeling bad or guilty about yourself", "Trouble relaxing","Poor appetite or overeating")
 )
@@ -164,163 +190,29 @@ filters = list(
 
 plot_data_quality_predictiveness(filters)
 
-
-
-################# # # # # # #
-
-
-
-
+stream = "gps"
+stream = "accelerometer"
+coverage = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_coverage.rds", sep="")) %>% data.frame
+mean(coverage[1:30,"total_coverage_across_active_patients"])
 
 
 
 
+pdf("C:/Users/Patrick/Desktop/plot.pdf",width=6,height=5)
+par(mar = c(5, 4, 4, 2+4) + 0.1)
+plot(0,0,xlim=c(1,10),ylim=c(1,10))
+polygon(c(2,2,9,9),c(6,8,8,6),col=rgb(.8,.8,.8),border=FALSE)
+points(1:10,pch=16)
+legend("topright",col=cols(4),legend=1:4,pch=16,cex=1.5,box.col="white",inset=c(-0.2,0),xpd=TRUE)
+dev.off()
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# current work
-function(filters, ...){
-  pdf(paste(output_filepath, "/Results/Group/Data_Quality_Predictiveness.pdf",sep=""),width=6,height=6.4)
-  for(filter in 1:length(names(filters))){
-    name_filter = gsub("_"," ",names(filters)[filter])
-    print(name_filter)
-    coefs=t(sapply(0:5,function(x){y=summary(model_data_quality_predictiveness(filters[[filter]], x))$coef[,3];sign(y)*-log10((1-pnorm(abs(y)))*2)}))
-    colnames(coefs) = c("(int)", "Acc", "GPS", "View", "Sub", "Comp")
-    
-    plot(0,0,col=NA,yaxt="n",xaxt="n",xlab="Weeks Until Prediction",ylab="Data Quality Metric",xlim=c(1.04,7-.04),ylim=c(1.04,7-.04),axes=F,main=name_filter)
-    axis(1,at=1:6+.5, labels = 6-1:6)
-    axis(2,at=1:6+.5, labels = colnames(coefs))
-    for(i in 1:6){
-      for(j in 1:6){
-        C=1-min(abs(coefs[i,j]),3)/3
-        if(coefs[i,j] > 0)  polygon(7-i+c(0,0,1,1), j+c(0,1,1,0),col=rgb(C,C,1),pch=15,cex=2,border=FALSE)
-        if(coefs[i,j] <= 0) polygon(7-i+c(0,0,1,1), j+c(0,1,1,0),col=rgb(1,C,C),pch=15,cex=2,border=FALSE)
-        
-        if(coefs[i,j] > 0)  polygon(7-i+c(0,0,1,1), j+c(0,1,1,0),col=cols(1,start=.6,transparency=C,dirtiness = .05+.15*(1-C)),pch=15,cex=2,border=FALSE)
-        if(coefs[i,j] <= 0) polygon(7-i+c(0,0,1,1), j+c(0,1,1,0),col=cols(1,start=0, transparency=C,dirtiness = .05+.2*(1-C)),pch=15,cex=2,border=FALSE)
-      }
-    }
-    for(i in 1:6){
-      for(j in 1:6){
-        if(abs(coefs[i,j]) > -log10(0.05)) polygon(7-i+c(0,0,1,1), j+c(0,1,1,0),col=NA,lwd=2)
-      }
-    }
-  }
-  dev.off()
-}
-
-
-function(questions_filter, SHIFT){
-  patient_names = list.files(data_filepath)[-grep("\\.",list.files(data_filepath))]
-  weekly_coverage = function(stream, shift, ...){
-    data = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_bursts.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
-    data[,"zeroed_week"] = data[,"zeroed"] %/% 7 + shift
-    return(
-      data %>% group_by(patient, zeroed_week) %>% summarize(
-        #mean_num_bursts_coverage = mean(num_bursts_coverage),
-        #mean_within_burst_length_coverage = mean(within_burst_length_coverage),
-        #mean_within_burst_frequency_coverage = mean(within_burst_frequency_coverage)
-        mean_total_coverage = sum(total_coverage)/7
-      )
-    )
-  }
-  create_zeroed_columns = function(data, shift){
-    data[,"zeroed"] = 0
-    mins = data %>% group_by(patient) %>% summarise(min_date = min(numeric_date))
-    for(pat in patient_names){
-      sub = which(data[,"patient"]==pat)
-      data[sub,"zeroed"] = data[sub,"numeric_date"]-unlist((mins %>% filter(patient == pat))[,"min_date"])
-    }
-    data[,"zeroed_week"] = data[,"zeroed"] %/% 7 + shift
-    return(data)
-  }
-  
-  
-  weekly_accelerometer = weekly_coverage("accelerometer", shift = SHIFT)
-  weekly_gps = weekly_coverage("gps", shift = SHIFT)
-  
-  timings = readRDS(paste(output_filepath, "/Processed_Data/Group/survey_timings.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
-  timings[,"numeric_date"] =as.numeric(as.Date(as.POSIXct(timings[,"Notified"],origin="1970-01-01")))
-  colnames(timings)[which(colnames(timings) == "Person")] = "patient"
-  timings = timings %>% data.frame
-  timings[,"time_to_present"] = log10(timings[,"Present"]-timings[,"Notified"])
-  timings[,"time_to_submitted"] = log10(timings[,"Submitted"]-timings[,"Present"])
-  timings = create_zeroed_columns(timings, shift = SHIFT)
-  timings = timings[complete.cases(timings)&(!is.infinite(timings[,"time_to_present"]))&(!is.infinite(timings[,"time_to_submitted"])),]
-  weekly_timings = timings %>% group_by(patient, zeroed_week) %>% summarize(
-    mean_time_to_present = mean(time_to_present),
-    mean_time_to_submitted = mean(time_to_submitted)
-  ) %>% data.frame
-  
-  surveys = list()
-  for(patient_name in patient_names){
-    patient_survey_filename = paste(output_filepath, "/Preprocessed_Data/Individual/",patient_name, "/survey_data.rds",sep="")
-    if(file.exists(patient_survey_filename))
-      surveys[[patient_name]] = readRDS(patient_survey_filename) %>% dplyr::filter(question.text %in% questions_filter) %>% group_by(survey_id, timestamp) %>% summarize(count=n(), mean_score = mean(as.numeric(answer),na.rm=T), completion = sum(!is.na(as.numeric(answer)))) %>% data.frame %>% mutate(patient = patient_name)
-  }
-  surveys = do.call(rbind, surveys)
-  surveys[,"date"] = as.factor(as.Date(as.POSIXct(surveys[,"timestamp"],origin="1970-01-01")))
-  surveys[,"numeric_date"] = as.numeric(surveys[,"date"])
-  surveys = create_zeroed_columns(surveys, shift = 0)
-  weekly_surveys = surveys %>% group_by(patient, zeroed_week) %>% summarize(mean_score = mean(mean_score), completion = sum(completion))
-  
-  
-  
-  data=Reduce(function(...) merge(..., all = TRUE, by = c("patient", "zeroed_week")), 
-              list(weekly_accelerometer, weekly_gps, weekly_timings, weekly_surveys))
-  #data[which(is.infinite(data[,"mean_within_burst_frequency_coverage.y"])),"mean_within_burst_frequency_coverage.y"] = NA
-  
-  
-  
-  mod = lmer(mean_score~mean_total_coverage.x + mean_total_coverage.y + 
-               mean_time_to_present + mean_time_to_submitted + completion + (1|patient), data=data)
-  return(mod)
-}
-
-
-
-
-
-
-
-
-
-
+stream = "accelerometer"
+patient_data_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
+patient_data_filename_TXT = paste(patient_data_filepath, "/", stream, "_bursts.txt",sep="")
+system(paste("python", code_filepath, data_filepath, patient_data_filename_TXT, patient_name, stream, millisecond_divider))
 
 
 

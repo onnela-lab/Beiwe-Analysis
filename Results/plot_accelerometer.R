@@ -1,4 +1,4 @@
-plot_accelerometer = function(minutes, forward_shift = 8, fixed_days = NA, maximum_width = 1, ...){
+plot_accelerometer = function(minutes, forward_shift = 8, fixed_days = NA, maximum_width = 1, use_patient_name = TRUE, ...){
   pdf(paste(output_filepath, "/Results/Group/slat_plot",".pdf",sep=""),width=9,height=5.3)
   for(patient_name in patient_names){
     accelerometer_filename = paste(output_filepath,"/Preprocessed_Data/Individual/",patient_name,"/appended_sheared_file_acc_",minutes,".rds",sep="")
@@ -17,8 +17,9 @@ plot_accelerometer = function(minutes, forward_shift = 8, fixed_days = NA, maxim
       days = accmat[,"days"] %>% unique %>% unlist
     
       D = ifelse(is.na(fixed_days), length(days), fixed_days)
+	  patient_title = ifelse(use_patient_name, patient_name, which(patient_name == patient_names)[1]) 
       plot(0,0,col=NA,xlim=c(0+.87,24-.87), ylim=c(0.02,.98),bty="n",
-         yaxt="n",ylab="Day",xaxt="n",xlab="Time of day",main=paste("Daily Accelerometer Data\nSubject ",patient_name,sep=""))
+         yaxt="n",ylab="Day",xaxt="n",xlab="Time of day",main=paste("Daily Accelerometer Data\nSubject ",patient_title,sep=""))
       axis(1,at=0:6*4,labels=0:6*4)
       axis(2,at=seq(0,1,length.out=5), label=round(seq(0,D,length.out=5)))
     
