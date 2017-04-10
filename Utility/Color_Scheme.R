@@ -1,6 +1,6 @@
 rgb2col = function(x) strtoi(c(substr(x,2,3),substr(x,4,5),substr(x,6,7)), 16L)/256
 
-function(n,dirtiness=.25, darkness=.2, transparency=0, ...){
+cols = function(n,dirtiness=.25, darkness=.2, transparency=0, ...){
   colors = rainbow(n, ...) 
   f = function(colors, val) strtoi(paste("0x",substr(colors,2*val, 2*val + 1),sep="")) 
   rgb = cbind(f(colors, 1),f(colors, 2),f(colors, 3))
