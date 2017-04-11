@@ -131,23 +131,6 @@ for(i in 1:length(patient_names)){
   anomaly_detection_plot(ID=patient_names[i],Nsurveys=Nsurveys,NoSurvey=FALSE,vertmarks=vertmarks,onesided=TRUE)
 }
 
-cols = function(n,dirtiness=.25, darkness=.2, transparency=0, ...){
-  colors = rainbow(n, ...) 
-  f = function(colors, val) strtoi(paste("0x",substr(colors,2*val, 2*val + 1),sep="")) 
-  rgb = cbind(f(colors, 1),f(colors, 2),f(colors, 3))
-  new_rgba = cbind(floor((rgb+(1-rgb/256)*dirtiness*256)*(1-darkness*dirtiness)),floor(255*(transparency)))
-  if(transparency == 0){
-    new_rgba = new_rgba[,1:3]
-  }else{
-    new_rgba[,4] = round(255*(1-transparency))
-  }
-  CHARS = format(as.hexmode(new_rgba),upper.case=TRUE,width=2)
-  if(n==1){CHARMAT = t(as.matrix(CHARS))}else{CHARMAT = matrix(CHARS,ncol=ncol(new_rgba))}
-  new_colors = apply(CHARMAT ,1,function(strings) paste("#",paste(strings,collapse=""),sep=""))
-  return(new_colors)
-}
-
-
 ###################################
 ####          plotting         ####
 ###################################

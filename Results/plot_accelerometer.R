@@ -1,5 +1,6 @@
 plot_accelerometer = function(minutes, forward_shift = 8, fixed_days = NA, maximum_width = 1, use_patient_name = TRUE, ...){
   pdf(paste(output_filepath, "/Results/Group/slat_plot",".pdf",sep=""),width=9,height=5.3)
+  par(cex.main=1.3, cex.lab=1.3)
   for(patient_name in patient_names){
     accelerometer_filename = paste(output_filepath,"/Preprocessed_Data/Individual/",patient_name,"/appended_sheared_file_acc_",minutes,".rds",sep="")
     if(file.exists(accelerometer_filename)){
