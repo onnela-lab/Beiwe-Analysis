@@ -22,7 +22,6 @@ gps_burst_duration = 60
 acc_break_duration = 60
 gps_break_duration = 60*10
 
-plot(1:4,yaxt="n")
 # Source all files
 source(paste(source_filepath, "Utility/Initialize.R",sep="/"))
 

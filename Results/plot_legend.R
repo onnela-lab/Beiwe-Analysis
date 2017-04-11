@@ -1,7 +1,7 @@
 plot_legend = function(stream, ...){
   plot_filename = paste(output_filepath, "/Results/Group/legend_",stream,".pdf",sep="")
-  bursts   = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_bursts.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
-  coverage = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_coverage.rds", sep="")) %>% data.frame
+  bursts   = readRDS(paste(output_filepath, "/Processed_Data/Group/", stream, "_bursts.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
+  coverage = readRDS(paste(output_filepath, "/Processed_Data/Group/", stream, "_coverage.rds", sep="")) %>% data.frame
   patients = bursts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character %>% sort
   dark_colors = cols(length(patients),transparency=1-light_alpha)
   names = bursts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character

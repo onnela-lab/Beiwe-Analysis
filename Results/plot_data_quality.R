@@ -2,8 +2,8 @@ plot_data_quality = function(stream, frequency, burst_duration, break_duration, 
   
   plot_filename = paste(output_filepath, "/Results/Group/data_quality_",stream,".pdf",sep="")
   
-  bursts   = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_bursts.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
-  coverage = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/", stream, "_coverage.rds", sep="")) %>% data.frame
+  bursts   = readRDS(paste(output_filepath, "/Processed_Data/Group/", stream, "_bursts.rds", sep="")) %>% data.frame %>% subset(complete.cases(.))
+  coverage = readRDS(paste(output_filepath, "/Processed_Data/Group/", stream, "_coverage.rds", sep="")) %>% data.frame
   
   patients = bursts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% as.character %>% sort
   dark_colors = cols(length(patients),transparency=1-light_alpha)

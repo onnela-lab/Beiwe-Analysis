@@ -2,13 +2,13 @@ coverage_over_time = function(stream,
                               verbose = TRUE,
                               ...)
 {
-  input_filename = paste(output_filepath, "/Preprocessed_Data/Group/",stream, "_bursts.rds", sep="")
-  results_filename = paste(output_filepath, "/Preprocessed_Data/Group/",stream, "_coverage.rds", sep="")
+  input_filename = paste(output_filepath,   "/Processed_Data/Group/",stream, "_bursts.rds", sep="")
+  results_filename = paste(output_filepath, "/Processed_Data/Group/",stream, "_coverage.rds", sep="")
   
   if(!file.exists(input_filename)){
     if(verbose) cat("Bursts file does not exist.\n")
   }else{
-    bursts   = readRDS(paste(output_filepath, "/Preprocessed_Data/Group/",stream, "_bursts.rds", sep=""))
+    bursts   = readRDS(input_filename)
     n_patients = bursts %>% data.frame %>% dplyr::select(patient) %>% unique %>% unlist %>% length
     coverage_over_time = bursts %>%
       group_by(zeroed) %>%

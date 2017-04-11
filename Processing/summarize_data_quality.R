@@ -46,7 +46,7 @@ summarize_data_quality = function(stream,
     sub = which(bursts[,"patient"]==pat)
     bursts[sub,"zeroed"] = bursts[sub,"numeric_date"]-unlist((mins %>% filter(patient == pat))[,"min_date"])
   }
-
+  bursts = bursts %>% data.frame
   saveRDS(bursts, paste(output_filepath,"/Processed_Data/Group/", stream, "_bursts.rds",sep=""))
 }
 

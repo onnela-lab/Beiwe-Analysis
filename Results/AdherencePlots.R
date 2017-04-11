@@ -1,7 +1,3 @@
-#fildir="C:/Users/Ian/Documents/Work/JP/Schizophrenia/Data"
-#plotname="DataCollectionPlot-12-12-16.pdf"
-
-## This file requires GPS_preprocessing to be run first.
 daily_adherence_grid = function(...){
   plotname="daily_adherence_grid.pdf"
   SIDs=patient_names
@@ -223,7 +219,7 @@ daily_adherence_grid = function(...){
           #polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(c(1,0,1),ink_depth=(1-gpsvals[['gpsmis']][IDgps]/1440)^.2),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[5]),ink_depth=(1-gpsvals[['gpsmis']][IDgps]/1440)^.2),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
           
-          }else{
+        }else{
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)        
         }
         if(is.numeric(gpsvals[['gpsht']][IDgps])){
@@ -326,12 +322,11 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-<<<<<<< HEAD
       yval=7 #############################################################################################
-      
+
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-        
+
         if(length(which(textxvals==j))>0){
           numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
           if(numsnt==0){
@@ -350,30 +345,6 @@ daily_adherence_grid = function(...){
             catsnt=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-=======
-      yval=length(survey_IDs_v)+5+4
-	  
-	  if(!is.null(texts_ls)&& length(texts_ls)>0){
-       textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-     }
-	  
-      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
-        numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][1]
-        if(numsnt==0){
-          catsnt=0
-        }else if(numsnt<6){
-          catsnt=1
-        }else if(numsnt<10){
-          catsnt=2
-        }else if(numsnt<15){
-          catsnt=3
-        }else if(numsnt<20){
-          catsnt=4
-        }else if(numsnt<25){
-          catsnt=5
->>>>>>> origin/master
-        }else{
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
       }
     }
@@ -381,7 +352,6 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-<<<<<<< HEAD
       yval=8 #############################################################################################
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
@@ -403,28 +373,6 @@ daily_adherence_grid = function(...){
             catdur=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-=======
-      yval=length(survey_IDs_v)+5+5
-      if(!is.null(texts_ls) && length(texts_ls)>0){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-      }
-      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
-        dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][3]
-        if(dursnt==0){
-          catdur=0
-        }else if(dursnt<76){
-          catdur=1
-        }else if(dursnt<151){
-          catdur=2
-        }else if(dursnt<226){
-          catdur=3
-        }else if(dursnt<301){
-          catdur=4
-        }else if(dursnt<376){
-          catdur=5
->>>>>>> origin/master
-        }else{
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
       }
     }
@@ -432,11 +380,10 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-<<<<<<< HEAD
       yval= 9 #############################################################################################
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)      
-        
+        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
+
         if(length(which(textxvals==j))>0){
           numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][2]
           if(numsnt==0){
@@ -455,28 +402,6 @@ daily_adherence_grid = function(...){
             catsnt=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catsnt/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-=======
-      yval=length(survey_IDs_v)+5+6
-      if(!is.null(texts_ls) && length(texts_ls)>0){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)      
-      }
-      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
-        numsnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][2]
-        if(numsnt==0){
-          catsnt=0
-        }else if(numsnt<6){
-          catsnt=1
-        }else if(numsnt<10){
-          catsnt=2
-        }else if(numsnt<15){
-          catsnt=3
-        }else if(numsnt<20){
-          catsnt=4
-        }else if(numsnt<25){
-          catsnt=5
->>>>>>> origin/master
-        }else{
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
       }
     }
@@ -484,7 +409,6 @@ daily_adherence_grid = function(...){
     for(j in 0:((tmax-tmin) / seconds_per_day)){
       xval=j
       eps=.5
-<<<<<<< HEAD
       yval = 10 #############################################################################################
       if(!is.null(texts_ls) && !is.null(names(texts_ls))){
         textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
@@ -506,28 +430,6 @@ daily_adherence_grid = function(...){
             catdur=6
           }
           polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col=light_color(rgb2col(stream_colors[3]),ink_depth=catdur/6),border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
-=======
-      yval=length(survey_IDs_v)+5+7
-      if(!is.null(texts_ls) && length(texts_ls)>0){
-        textxvals=round((as.numeric(as.POSIXct(names(texts_ls),origin="1970-01-01"))-tmin) / seconds_per_day)
-      }
-      if(!is.null(texts_ls) && length(texts_ls)>0 && length(which(textxvals==j))>0){
-        dursnt = texts_ls[[names(texts_ls)[which(textxvals==j)]]][4]
-        if(is.na(dursnt) || dursnt==0){
-          catdur=0
-        }else if(dursnt<76){
-          catdur=1
-        }else if(dursnt<151){
-          catdur=2
-        }else if(dursnt<226){
-          catdur=3
-        }else if(dursnt<301){
-          catdur=4
-        }else if(dursnt<376){
-          catdur=5
->>>>>>> origin/master
-        }else{
-          polygon(c(xval-eps,xval-eps,xval+eps,xval+eps),c(yval-eps,yval+eps,yval+eps,yval-eps),col="white",border=light_color(c(0,0,0),ink_depth=.2),lwd=.1)
         }
       }
     }
@@ -548,9 +450,3 @@ daily_adherence_grid = function(...){
   #legend("bottomleft",title="Data collected",c("GPS (darker for more data collected)",paste("Survey ID:",survey_IDs_v)),pch=c(15,0,0,0,0,0),col=c("black",col_survey_v),cex=.4,lty=c(NA,NA,NA,NA,NA,NA),lwd=c(1,.2,.2,.2,.2,.2),bty="n")
   dev.off() 
 }
-
-
-
-
-
-
