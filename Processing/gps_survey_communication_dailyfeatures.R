@@ -16,6 +16,9 @@ GetSurveyRow = function(aIDs,qIDs){
 # dictionary: key is date, element is dictionary of qIDs
 
 
+svout = f1(survey_id,patient_id,aIDs,qIDs,data_filepath)
+SID=patient_id
+datadir=data_filepath
 f1 = function(survey_id,SID,aIDs,qIDs,datadir){
   fildir=paste(datadir,SID,"survey_answers",survey_id,sep="/")
   #setwd(fildir)
@@ -180,7 +183,8 @@ daily_features = function(...){
   outmat = cbind(outmat,matrix(0,nrow=nrow(outmat),ncol=16))
   textlabels=c("outgoing_texts", "outgoing_textlengths", "text_outdegree","incoming_texts", "incoming_textlengths", "text_indegree","text_reciprocity", "text_responsiveness")
   calllabels=c("outgoing_calls", "outgoing_calllengths", "call_outdegree", "incoming_calls", "incoming_calllengths", "call_indegree","call_reciprocity", "call_responsiveness")
-  colnames(outmat)=c("IID","Date",unlist(lapply(names(qIDs),function(x) qIDs[[x]])),colnames(mobmat)[2:(length(colnames(mobmat)))],textlabels,calllabels)
+  mobmatcolnames=c("Hometime","DistTravelled","RoG","MaxDiam","MaxHomeDist","SigLocsVisited","AvgFlightLen","StdFlightLen","AvgFlightDur","StdFlightDur","ProbPause","SigLocEntropy","MinsMissing","CircdnRtn","WkEndDayRtn")
+  colnames(outmat)=c("IID","Date",unlist(lapply(names(qIDs),function(x) qIDs[[x]])),mobmatcolnames,textlabels,calllabels)
   outmat=data.frame(outmat,stringsAsFactors=F)
   
   

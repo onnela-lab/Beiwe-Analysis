@@ -1,5 +1,5 @@
 
-PatientTrajectoriesPlots = function(pltname,y,X,dat,surveylab=NULL,MMH=1400,MML=1440*5/6){
+patient_trajectories_plots = function(pltname,y,X,dat,surveylab=NULL,MMH=1400,MML=1440*5/6){
   for(i in 1:nrow(dat)){
     ssp=strsplit(dat[i,2],"/")[[1]]
     if(length(ssp)>1){

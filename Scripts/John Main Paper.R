@@ -6,9 +6,13 @@
 #data_filepath      = "C:/Users/Ian/Documents/Work/JP/Schizophrenia/Data"
 #output_filepath    = "C:/Users/Ian/Documents/Work/JP/Schizophrenia/Output"
 
-source_filepath    = "C:/Phoenix/School/Harvard/Research/Beiwe/Code/Beiwe-Analysis"
-data_filepath      = "C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Data/2017.01.09"
-output_filepath    = "C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Output"
+source_filepath    = "C:/Users/Ian/Documents/Work/JP/Beiwe/Github/Beiwe-Analysis"
+data_filepath      = "C:/Users/Ian/Documents/Work/JP/MGH_Beiwe/Data"
+output_filepath    = "C:/Users/Ian/Documents/Work/JP/MGH_Beiwe/Output"
+
+# source_filepath    = "C:/Phoenix/School/Harvard/Research/Beiwe/Code/Beiwe-Analysis"
+# data_filepath      = "C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Data/2017.01.09"
+# output_filepath    = "C:/Phoenix/School/Harvard/Research/Beiwe/Studies/John_Schizophrenia/Output"
 
 ### Constants:
 
@@ -31,7 +35,6 @@ patient_data_filename_TXT = paste(patient_data_filepath, "/", stream, "_bursts.t
 code_filepath = paste(source_filepath, "/Preprocessing/find_bursts.py",sep="")
 millisecond_divider = acc_millisecond_divider
 system(paste("python", code_filepath, data_filepath, patient_data_filename_TXT, patient_name, stream, millisecond_divider))
-
 
 system("C:/Python33/python.exe C:/Users/Patrick/Desktop/example.py hi")
 
@@ -79,6 +82,7 @@ for(patient_name in patient_names){
 daily_features()
 fill_in_NAs()
 patient_trajectories_plots(inds=c(31,40,43))# inds: columns of the feature matrix that will be plotted in patient_trajectories(). Must pick 3.
+patient_trajectories_plots(inds=c(3,54,57)) #MGH_Perlis
 
 find_questions()
 survey_responsiveness()

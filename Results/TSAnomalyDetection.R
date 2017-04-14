@@ -1,10 +1,8 @@
-Rcpp::sourceCpp(paste(source_filepath, "/Results/TimeSeriesAnomaly/TSDecompositionMissing.cpp",sep=""))
+library(Rcpp)
+library(mvtnorm)
+library(Matrix)
 
-MDYtoYMD = function(s){
-  temp=strsplit(vertmarks,"/")[[1]]
-  return(paste(temp[3],temp[1],temp[2],sep="-"))
-}
-
+Rcpp::sourceCpp(paste(source_filepath,"Results","TSDecompositionMissing.cpp",sep="/"))
 
 DecomposeErrors = function(y,times=NULL,dft=2,tscale=10,mintotvals=7,minvaleach=2,onesided=FALSE,buffer=.2){
   if(is.null(times)){
@@ -32,22 +30,17 @@ AnomalyDetectionTS = function(mat,B=1000,onesided=F,nonparam=T,ALPHA=0.05){
 }
 
 
-anomaly_detection_plot = function(ID,Nsurveys,NoSurvey=FALSE,vertmarks=NULL,onesided=TRUE){
-  infilename=paste("feature_matrix_clean_",daysback,"daycarry_combined.rds",sep="")
-  infilepath=paste(output_filepath,"Processed_Data","Group",infilename,sep="/")
-  outdir=paste(output_filepath,"Results","Individual",ID,sep="/")
-  if(!file.exists(infilepath)){return(NULL)}
+AnomalyDetectionPlot = function(homedir,filename,ID,Nsurveys,outfiletag="",NoSurvey=FALSE,vertmarks=NULL){
   Nmobfeats=15
-  if(length(grep("/",vertmarks))>0){
-    vertmarks = MDYtoYMD(vertmarks)
-  }
-  dat = readRDS(infilepath)[[1]]
-  #dat = read.table(paste(homedir,"Processed_data",filename,sep="/"),header=T,stringsAsFactors=F)
+  dat = read.table(paste(homedir,"Processed_data",filename,sep="/"),header=T,stringsAsFactors=F)
   rIDs=which(dat$IID==ID)
   y = dat[rIDs,]
-  #outdir=paste(homedir,"Output",ID,sep="/")
+  outdir=paste(homedir,"Output",ID,sep="/")
+  if(!file.exists(outdir)){
+    dir.create(outdir)
+  }  
   if(nrow(y)<4){
-    cat(" Not enough data for anomaly detection.")
+    cat(" Not enough data")
     return(NULL)
   }
   y = y[c(-1,-nrow(y)),]
@@ -63,21 +56,21 @@ anomaly_detection_plot = function(ID,Nsurveys,NoSurvey=FALSE,vertmarks=NULL,ones
     y = y[,-IDrm]
   }
   if(Nsocfeats+Nsurveys+Nmobfeats==0){
-    cat(" Not enough data for anomaly detection.")
+    cat(" Not enough data")
     return(NULL)
   }
   for(i in 1:3){
     if(i==1){
       if(NoSurvey || Nsurveys==0){next}
-      out=AnomalyDetectionTS(t(data.matrix(y[,3:(3+Nsurveys-1)])),B=1000,onesided); DTYPE="Surveys" #surveys only
+      out=AnomalyDetectionTS(t(data.matrix(y[,3:(3+Nsurveys-1)])),B=1000); DTYPE="Surveys" #surveys only
     }else if(i==2){
       if(Nmobfeats==0){next}
-      out=AnomalyDetectionTS(t(data.matrix(y[,(3+Nsurveys):(3+Nsurveys+Nmobfeats-1)])),B=1000,onesided); DTYPE="Mobility" #mobility only
+      out=AnomalyDetectionTS(t(data.matrix(y[,(3+Nsurveys):(3+Nsurveys+Nmobfeats-1)])),B=1000); DTYPE="Mobility" #mobility only
     }else{
       if(Nsocfeats==0){next}
-      out=AnomalyDetectionTS(t(data.matrix(y[,(3+Nsurveys+Nmobfeats):ncol(y)])),B=1000,onesided); DTYPE="Sociability" #sociability only
+      out=AnomalyDetectionTS(t(data.matrix(y[,(3+Nsurveys+Nmobfeats):ncol(y)])),B=1000); DTYPE="Sociability" #sociability only
     }
-    png(paste(outdir,paste("anomaly_detection",DTYPE,"-",ID,".png",sep=""),sep="/"),width=6,height=5,units="in",res=300)
+    png(paste(homedir,"Output",ID,paste("AnomalyDetection",DTYPE,"-",outfiletag,"-",ID,".png",sep=""),sep="/"),width=6,height=5,units="in",res=300)
     par(mai=c(1,.6,.4,.1))
     par(mgp=c(1.7,.6,0))
     plot(as.numeric(as.POSIXct(y[,2])),-log10(out$output[3,]),xaxt="n",xlab="",ylab=expression(-log[10](p)),pch=16,main=paste("Anomaly Detection: ",DTYPE,sep=""))
@@ -93,3 +86,16 @@ anomaly_detection_plot = function(ID,Nsurveys,NoSurvey=FALSE,vertmarks=NULL,ones
     dev.off()
   }
 }
+
+
+
+
+
+
+y = c(1,1,1,NA,NA,2,5,1,0,NA,2,NA,3)
+out=DecomposeErrors(y)
+
+plot(y,ylim=c(-2,5))
+points(out$mu,col="Red")
+points(out$s,col="blue")
+points(out$eps,col="green")
