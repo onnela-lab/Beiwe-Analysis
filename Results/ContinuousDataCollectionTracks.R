@@ -276,7 +276,9 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
     itrvl=tmin+c(ii-1,ii)*1000*60*60*24*7
     # Get accelerometer submat for this week
     ACCID1=which(ACCmat[,1]>itrvl[1])
+    NACCID1=which(ACCmat[,1]<=itrvl[1])
     ACCID2=which(ACCmat[,2]<itrvl[2])
+    NACCID2=which(ACCmat[,2]>=itrvl[2])
     if(length(ACCID1)>0 && length(ACCID2)>0){
       ACCID1=min(ACCID1)
       ACCID2=max(ACCID2)
@@ -286,8 +288,17 @@ PlotContinuousDataCollectionTracks=function(homedir,ID,ACCmat,GPSmat,SCNmat,DZEm
     }
     if(ACCID2>ACCID1){
       subACCmat=ACCmat[ACCID1:ACCID2,]
+      if(length(NACCID1)>0 && ACCmat[NACCID1[length(NACCID1)],2]>itrvl[1]){
+        subACCmat = rbind(c(itrvl[1],ACCmat[NACCID1[length(NACCID1)],2]),subACCmat)
+      }
+      if(length(NACCID2)>0 && ACCmat[NACCID2[1],1]<itrvl[2]){
+        subACCmat = rbind(subACCmat,c(ACCmat[NACCID2[1],1],itrvl[2]))
+      }
     }else{
       subACCmat=NULL
+    }
+    if(length(NACCID1)>0 && length(NACCID2)>0 && NACCID1[length(NACCID1)]==NACCID2[1]){
+      subACCmat=matrix(c(itrvl[1],itrvl[2]),nrow=1,ncol=2)
     }
     # Get gps submat for this week
     GPSID1=which(GPSmat[,1]>itrvl[1])
