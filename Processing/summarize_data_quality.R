@@ -35,7 +35,7 @@ summarize_data_quality = function(stream,
     mutate(avg_within_burst_frequency = sum_pings/(num_bursts*avg_within_burst_duration))
 
   bursts = bursts %>% group_by(patient, date) %>%
-    mutate(total_coverage = pmin(1,sum_pings/(24*60*60/(burst_duration+break_duration)*frequency*60)),
+    mutate(total_coverage = pmin(1,sum_pings/((burst_duration+break_duration)*burst_duration*frequency)),
         num_bursts_coverage = num_bursts/(24*60*60/(burst_duration+break_duration)),
         within_burst_length_coverage = avg_within_burst_duration/(burst_duration),
         within_burst_frequency_coverage = avg_within_burst_frequency/frequency

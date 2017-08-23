@@ -73,7 +73,7 @@ for(patient_name in patient_names){
   #location_plot(mobmat, textmat, callmat, statemat, accmat5, textlocs, calllocs, statelocs, daynames)
   
 }
-
+print("completed!")
 #####################################
 #### combined patient processing ####
 #####################################
@@ -199,6 +199,10 @@ stream = "accelerometer"
 patient_data_filepath = paste(output_filepath, "/Preprocessed_Data/Individual/", patient_name, sep="")
 patient_data_filename_TXT = paste(patient_data_filepath, "/", stream, "_bursts.txt",sep="")
 system(paste("python", code_filepath, data_filepath, patient_data_filename_TXT, patient_name, stream, millisecond_divider))
+
+
+
+
 
 
 

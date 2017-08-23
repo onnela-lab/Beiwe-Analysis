@@ -26,7 +26,7 @@ plot_accelerometer = function(minutes, forward_shift = 8, fixed_days = NA, maxim
     
       for(day_ID in 1:D){
         day = days[day_ID]
-        x=accmat %>% dplyr::filter(days==day) %>% select(obj, hours) %>% data.frame
+        x=accmat %>% dplyr::filter(days==day) %>% dplyr::select(obj, hours) %>% data.frame
         #points(x[,"hours"], rep(day_ID/D,nrow(x)), pch=15, col=palette[round(100*x[,"obj"])])
         if(nrow(x)>1){
           for(row in 1:(nrow(x)-1)){
@@ -51,7 +51,7 @@ plot_accelerometer = function(minutes, forward_shift = 8, fixed_days = NA, maxim
 
 
 
-
+anonymize = function(x){unlist(anonymized_names[x])}
 
 
 

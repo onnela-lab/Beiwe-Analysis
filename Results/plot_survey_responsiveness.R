@@ -7,7 +7,7 @@ plot_survey_responsiveness = function(legend = TRUE, ...){
   
   patient_names = timings %>% data.frame %>% dplyr::select(Person) %>% unique %>% unlist %>% as.character %>% sort
   dark_colors = cols(length(patient_names),transparency=1-light_alpha)
-  lite_colors = cols(length(patients),dirtiness=0.8,darkness=.1)
+  lite_colors = cols(length(patient_names),dirtiness=0.8,darkness=.1)
   person_dark_colors = dark_colors[timings %>% data.frame %>% dplyr::select(Person) %>% unlist %>% as.factor %>% as.numeric]
   person_lite_colors = lite_colors[timings %>% data.frame %>% dplyr::select(Person) %>% unlist %>% as.factor %>% as.numeric]
   

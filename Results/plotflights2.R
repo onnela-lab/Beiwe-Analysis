@@ -223,7 +223,7 @@ hours = function(timestamps){ # converts timestamps into hour of the day.
         unlist()}) %>%
     data.frame() %>% 
     cbind(timestamps) %>%
-    select(hour, min, sec) %>%
+    dplyr::select(hour, min, sec) %>%
     apply(1, function(times) sum(times * c(1, 1/60, 1/3600)))
   output = as_data_frame(cbind(hours=hours, days=days))
   output["hours"] = lapply(output["hours"], as.numeric)

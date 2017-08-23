@@ -235,27 +235,6 @@ daily_subsets = function(mat, time_string = "t0", end_time_string = NA, tz=""){
   return(subsetinds_v)
 }
 
-hours = function(timestamps){ # converts timestamps into hour of the day.
-  days = timestamps %>% unlist %>% as.POSIXlt(origin = "1970-01-01") %>%
-    as.character %>%
-    map(function(x){if(is.na(x)){return(c("NA","NA"))}else{return(strsplit(x, " "))}}) %>%
-    unlist %>%
-    matrix(nrow=2) %>%
-    t
-  days = days[,1]
-  hours = as.POSIXlt(timestamps, origin = "1970-01-01") %>%
-    map(function(timestamp){timestamp %>%
-        unclass() %>%
-        unlist()}) %>%
-    data.frame() %>% 
-    cbind(timestamps) %>%
-    select(hour, min, sec) %>%
-    apply(1, function(times) sum(times * c(1, 1/60, 1/3600)))
-  output = as_data_frame(cbind(hours=hours, days=days))
-  output["hours"] = lapply(output["hours"], as.numeric)
-  return(output)
-}
-
 #patient_names = c("ws535wyt","x64sum6q","v5k3vk1b","upgskgun","euvxbf3w","dske5c2t") #just restricted to patients with full data for now
 #setwd("C:/Users/Patrick/Desktop/schizophrenia_patients")
 
