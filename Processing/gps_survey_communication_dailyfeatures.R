@@ -111,9 +111,9 @@ CreateMobilityFeatures = function(patient_name, ...){
 }
 
 
-svout = f1(survey_id,patient_id,aIDs,qIDs,data_filepath)
-SID=patient_id
-datadir=data_filepath
+# svout = f1(survey_id,patient_id,aIDs,qIDs,data_filepath)
+# SID=patient_id
+# datadir=data_filepath
 
 daily_features = function(...){
   patient_output_filepath = paste(output_filepath, "/Processed_Data/Group",sep="")
