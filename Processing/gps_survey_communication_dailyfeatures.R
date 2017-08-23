@@ -15,10 +15,6 @@ GetSurveyRow = function(aIDs,qIDs){
 
 # dictionary: key is date, element is dictionary of qIDs
 
-
-svout = f1(survey_id,patient_id,aIDs,qIDs,data_filepath)
-SID=patient_id
-datadir=data_filepath
 f1 = function(survey_id,SID,aIDs,qIDs,datadir){
   fildir=paste(datadir,SID,"survey_answers",survey_id,sep="/")
   #setwd(fildir)
@@ -115,7 +111,9 @@ CreateMobilityFeatures = function(patient_name, ...){
 }
 
 
-
+svout = f1(survey_id,patient_id,aIDs,qIDs,data_filepath)
+SID=patient_id
+datadir=data_filepath
 
 daily_features = function(...){
   patient_output_filepath = paste(output_filepath, "/Processed_Data/Group",sep="")
