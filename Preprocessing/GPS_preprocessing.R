@@ -498,7 +498,9 @@ InitializeParams = function(out){
   ID2=which(out[,1]==2)
   ID3=which(out[,1]==3)
   ID4=which(out[,1]==4)
-  
+  if(length(ID1)<=1 || length(ID2)<=1){
+    return(list(ID1=ID1,ID2=ID2,ID3=ID3,ID4=ID4))
+  }
   # probability of a pause after a flight
   ID1p1=ID1+1    
   if(length(ID1)>0 && ID1[length(ID1)]==nrow(out)){  
@@ -557,10 +559,10 @@ MobmatQualityOK = function(mobmat,obj){
   if(!is.matrix(mobmat)){
     msg = "Mobmat not a matrix. Removing individual from analysis.\n"
   }
-  if(length(obj$ID1)==0){
+  if(length(obj$ID1)<=1){
     msg= "No flights in mobmat. Removing individual from analysis.\n"
   }
-  if(length(obj$ID2)==0){
+  if(length(obj$ID2)<=1){
     msg= "No pauses in mobmat. Removing individual from analysis.\n"
   }
   return(msg)
