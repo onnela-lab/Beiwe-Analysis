@@ -209,7 +209,7 @@ daily_features = function(...){
       outgoing_textlengths = textmat_f %>%
         group_by(day) %>%
         filter(sent.vs.received == "sent SMS") %>%
-        summarise(outgoing_textlengths = sum(message.length))
+        summarise(outgoing_textlengths = sum(as.numeric(message.length)))
       
       text_outdegree = textmat_f %>%
         group_by(day) %>%
@@ -226,7 +226,7 @@ daily_features = function(...){
       incoming_textlengths = textmat_f %>%
         group_by(day) %>%
         filter(sent.vs.received == "received SMS") %>%
-        summarise(incoming_textlengths = sum(message.length))
+        summarise(incoming_textlengths = sum(as.numeric(message.length)))
       
       text_indegree = textmat_f %>%
         group_by(day) %>%
