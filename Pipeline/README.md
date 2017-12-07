@@ -1,3 +1,4 @@
 There are five ways to run code: hourly, daily, weekly, monthly and manually. The first four are run regularly with no user interaction. The fifth is run by pressing a button on ***TODO: API URL***.
 
 To run code on any of those five schedules, put the name of the .R file with the code you want run on that schedule in the appropriately named .txt file in this directory. The .txt files are newline-separated, so put one file name on each line of the file. The files will be run sequentially according to their order in the .txt file, and one file will not be run until the previous file has finished running.
+Note that any file that is listed in a .txt file has to have #!/file/path at the top to let the server know what program to use to run it. For example, a python file should have #!/usr/bin/python as its first line.
