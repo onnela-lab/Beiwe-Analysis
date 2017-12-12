@@ -1,0 +1,5 @@
+numpy==1.13.3  # maths
+pandas==0.21.0  # data analysis
+python-dateutil==2.6.1  # datetime utilities
+pytz==2017.3  # timezone utilities
+six==1.11.0  # python2-python3 compatibility
