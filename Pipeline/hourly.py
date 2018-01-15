@@ -28,6 +28,7 @@ Commented out example code follows.
 """
 # AJK TODO remember to comment it out lol
 
+from datetime import datetime
 # Filesystem utilities
 import os
 from os.path import join
@@ -73,8 +74,9 @@ for patient_name in folder_contents:
             results_filepath,
             patient_name,
             'accelerometer',
-            30000,
+            '30000',  # subprocess requires string arguments
         ))
+        os.mkdir(join(PROC_DATA_DIR, patient_name))
 
 # Run find_bursts on the raw accelerometer data
 ANALYSIS_DIR = '/home/Beiwe-Analysis'
@@ -89,5 +91,7 @@ for args in find_bursts_input:
         fn.write(logs)
 
 # Zip all the files created above and upload them to S3
-subprocess.check_call(['zip', join(PROC_DATA_DIR, 'data.zip'), PROC_DATA_DIR])
-subprocess.check_call(['python3', '/home/download_s3_files.py', join(RAW_DATA_DIR, 'data.zip')])
+local_file = join(PROC_DATA_DIR, 'data.zip')
+remote_file = 'pipeline-upload-{}'.format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f'))
+subprocess.check_call(['zip', '-r', local_file, PROC_DATA_DIR])
+subprocess.check_call(['python3', '/home/upload_s3_files.py', local_file, remote_file])

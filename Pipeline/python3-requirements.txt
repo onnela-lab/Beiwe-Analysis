@@ -1,1 +1,7 @@
 # Put any requirements for python 3 in this file. The requests library version 2.18.4 is already provided.
+
+# up-to-date as of 2018-01-15
+numpy==1.14.0
+
+# up-to-date as of 2018-01-15
+pandas==0.22.0
