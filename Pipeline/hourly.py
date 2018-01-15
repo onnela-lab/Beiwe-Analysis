@@ -10,7 +10,7 @@ Programs:
     Python 3.5
     Any python libraries listed in python3-requirements.txt
 Environment variables (accessed using os.getenv):
-    server_url: The domain name of your Beiwe instance (e.g. mystudy.beiwe.org)
+    server_url: The domain name of your Beiwe instance (e.g. https://mystudy.beiwe.org)
     study_object_id: The UUID of the study that the code is being run on
         (e.g. '584b042c2dd65714f0a8c3f4')
     study_name: The name of the study that the code is being run on (e.g. 'Diabetes Study 2018')
