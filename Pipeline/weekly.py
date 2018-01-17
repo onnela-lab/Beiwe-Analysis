@@ -9,7 +9,7 @@ Programs:
     Python 2.7
     Python 3.5
     Any python libraries listed in python3-requirements.txt
-Environment variables (accessed using os.getenv):
+Environment variables (accessed using os.environ):
     server_url: The domain name of your Beiwe instance (e.g. https://mystudy.beiwe.org)
     study_object_id: The UUID of the study that the code is being run on
         (e.g. '584b042c2dd65714f0a8c3f4')
@@ -17,14 +17,14 @@ Environment variables (accessed using os.getenv):
 Files:
     The Beiwe-Analysis repository, located at /home/Beiwe-Analysis. This file is located
         inside that repository, at /home/Beiwe-Analysis/Pipeline/weekly.py.
-    /home/download_s3_files.py: A python3 script that downloads the files for the study and
-        puts them in a zip file. The zip file name is specified as an command-line argument.
-    /home/upload_s3_files.py: A python3 script that takes a file and uploads it to an S3
-        bucket. The local and S3 file names are both specified as command-line arguments.
 
 If you experience difficulties with configuration, please contact msimoneau@hsph.harvard.edu.
 
-Commented out example code follows.
+Instructions for running this locally can be found in the README in this directory.
+
+Commented out example code follows. If you uncomment it, you will have code that downloads
+raw data, runs find_bursts.py on it and uploads the processed data. As is, the code only
+runs on studies that have either 'Diabetes' or 'Test' in their names.
 """
 
 # from datetime import datetime
@@ -34,19 +34,30 @@ Commented out example code follows.
 # import subprocess
 #
 # # Only run this code on Diabetes studies and test studies
-# study_name = os.getenv('study_name').lower()
+# # Note that if you do not set study_name, or any of the other environment variables used in
+# # download_s3_files.py or upload_s3_files.py, the code will fail to execute.
+# study_name = os.environ['study_name'].lower()
 # if 'diabetes' not in study_name and 'test' not in study_name:
 #     exit(0)
 #
+# # Directory names, based on the location of this file. HOME is the parent directory of the
+# # Beiwe-Analysis repository.
+# BEIWE_ANALYSIS_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+# HOME = os.path.dirname(BEIWE_ANALYSIS_DIR)
+# UTILS = join(os.path.dirname(os.path.realpath(__file__)), 'utils')
+#
+# now = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')
+# RAW_DATA_DIR = join(HOME, 'raw-data-{}'.format(now))
+# PROC_DATA_DIR = join(HOME, 'processed-data-{}'.format(now))
+#
 # # Make a folder for raw data, download all the files for this study from S3 and unzip them
 # # into the new folder.
-# RAW_DATA_DIR = '/home/raw_data'
 # os.mkdir(RAW_DATA_DIR)
-# subprocess.check_call(['python3', '/home/download_s3_files.py', join(RAW_DATA_DIR, 'data.zip')])
-# subprocess.check_call(['unzip', join(RAW_DATA_DIR, 'data.zip'), '-d', RAW_DATA_DIR])
+# download_file = join(RAW_DATA_DIR, 'data.zip')
+# subprocess.check_call(['python3', join(UTILS, 'download_s3_files.py'), download_file])
+# subprocess.check_call(['unzip', '-q', download_file, '-d', RAW_DATA_DIR])
 #
 # # Collect some statistics about the raw data
-# PROC_DATA_DIR = '/home/processed_data'
 # os.mkdir(PROC_DATA_DIR)
 # folder_contents = os.listdir(RAW_DATA_DIR)
 # if folder_contents:
@@ -78,9 +89,8 @@ Commented out example code follows.
 #         os.mkdir(join(PROC_DATA_DIR, patient_name))
 #
 # # Run find_bursts on the raw accelerometer data
-# ANALYSIS_DIR = '/home/Beiwe-Analysis'
 # for args in find_bursts_input:
-#     command = ['python3', join(ANALYSIS_DIR, 'Preprocessing', 'find_bursts.py')]
+#     command = ['python3', join(BEIWE_ANALYSIS_DIR, 'Preprocessing', 'find_bursts.py')]
 #     command.extend(args)
 #     logs = subprocess.check_output(command)
 #
@@ -93,4 +103,6 @@ Commented out example code follows.
 # local_file = join(PROC_DATA_DIR, 'data.zip')
 # remote_file = 'pipeline-upload-{}.zip'.format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f'))
 # subprocess.check_call(['zip', '-r', local_file, PROC_DATA_DIR])
-# subprocess.check_call(['python3', '/home/upload_s3_files.py', local_file, remote_file])
+# subprocess.check_call(['python3', join(UTILS, 'upload_s3_files.py'), local_file, remote_file])
+#
+# print('Complete!')

@@ -23,12 +23,12 @@ def run(local_file, remote_file):
     """
     
     # Grab environment variables
-    freq = os.getenv('FREQ')
-    access_key_ssm_name = '{}-{}'.format(os.getenv('access_key_ssm_name'), freq)
-    secret_key_ssm_name = '{}-{}'.format(os.getenv('secret_key_ssm_name'), freq)
-    study_object_id = os.getenv('study_object_id')
-    region_name = os.getenv('region_name')
-    server_url = os.getenv('server_url')
+    freq = os.environ['FREQ']
+    access_key_ssm_name = '{}-{}'.format(os.environ['access_key_ssm_name'], freq)
+    secret_key_ssm_name = '{}-{}'.format(os.environ['secret_key_ssm_name'], freq)
+    study_object_id = os.environ['study_object_id']
+    region_name = os.environ['region_name']
+    server_url = os.environ['server_url']
     
     # Get the necessary credentials for pinging the Beiwe server
     ssm_client = boto3.client('ssm', region_name=region_name)
