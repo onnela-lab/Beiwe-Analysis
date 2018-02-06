@@ -1,4 +1,4 @@
-call_features = function(textmat){
+call_features = function(callmat){
   # input:  callmat, a processed array of calls
   # output: call_features, a processed array of calls features
   day = function(timestamp) strsplit(as.character(as.POSIXct(timestamp,tz="",origin="1970-01-01"))," ")[[1]][1]
