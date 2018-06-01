@@ -14,12 +14,12 @@ import boto3
 import requests
 
 
-def run(local_file, remote_file):
+def upload_file_to_s3(local_file_path, remote_file_path, tags_list):
     """
     Run the actual code.
     
-    :param local_file: path to the local file to be uploaded
-    :param remote_file: name of the file this will be saved as remotely (on Amazon S3)
+    :param local_file_path: path to the local file to be uploaded
+    :param remote_file_path: name of the file this will be saved as remotely (on Amazon S3)
     """
     
     # Grab environment variables
@@ -29,7 +29,7 @@ def run(local_file, remote_file):
     study_object_id = os.environ['study_object_id']
     region_name = os.environ['region_name']
     server_url = os.environ['server_url']
-    
+
     # Get the necessary credentials for pinging the Beiwe server
     ssm_client = boto3.client('ssm', region_name=region_name)
     resp = ssm_client.get_parameters(
@@ -39,19 +39,19 @@ def run(local_file, remote_file):
     access_key, secret_key = [p['Value'] for p in resp]
     
     pipeline_upload_url = '{}/pipeline-upload/v1'.format(server_url)
-    
+
     payload = {
         'access_key': access_key,
         'secret_key': secret_key,
         'study_id': study_object_id,
-        'file_name': remote_file,
-        'tags': json.dumps([remote_file]),  # endpoint expects JSON list
+        'file_name': remote_file_path,
+        'tags': json.dumps(tags_list),  # endpoint expects JSON list
     }
     
-    with open(local_file, 'rb') as fn:
+    with open(local_file_path, 'rb') as local_file:
         resp = requests.post(
             pipeline_upload_url,
-            files={'file': fn},
+            files={'file': local_file},
             data=payload,
         )
     
@@ -60,6 +60,17 @@ def run(local_file, remote_file):
 
 
 if __name__ == '__main__':
-    _local_file = sys.argv[1]
-    _remote_file = sys.argv[2]
-    run(_local_file, _remote_file)
+    """
+    You can call this file from a Bash shell with 3 command-line arguments:
+    1. The filepath of a local file to upload
+    2. The name you want the file to have once it's uploaded to the server
+    3. A file containing a JSON list of tags
+    
+    Or, you can import the upload_file_to_s3() function in Python and call that function directly. 
+    """
+    _local_file_path = sys.argv[1]
+    _remote_file_path = sys.argv[2]
+    _tags_file = sys.argv[3]
+    with open(_tags_file) as json_tags_file:
+        tags_list = json.load(json_tags_file)
+    upload_file_to_s3(_local_file_path, _remote_file_path, tags_list)

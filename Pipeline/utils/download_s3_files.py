@@ -42,6 +42,7 @@ def run(local_file):
         'access_key': access_key,
         'secret_key': secret_key,
         'study_id': study_object_id,
+        'web_form': 'true'  # Include this because it makes the backend return a zip file
     }
     # TODO do this as a generator, if simple
     resp = requests.post(data_access_api_url, data=payload)
