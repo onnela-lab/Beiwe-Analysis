@@ -558,7 +558,7 @@ The functions below generate plots for individual patient analysis. All plots of
 Plots daily data collection status for **Surveys**, **Screen on/off**, **GPS**, and **Accelerometer**. This function requires the RDS file MobFeatures.rds created by the `CreateMobilityFeatures()` function.
 
 <p align="center"> 
-<img src="./example_plots/DataCollectionTracks.png" width="500">
+<img src="./Figures/DataCollectionTracks.png" width="500">
 </p>
 
 #### Group Results
