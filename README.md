@@ -570,7 +570,7 @@ The functions below generate plots for group analysis results and save pdf files
 Plots grid graphs demonstrating the daily adherence status of all patients. The columns of each grid graph are days, and the rows are survey responses, # of missed calls, call duration, total length of texts received, # of texts received, total length of texts sent, circadian routine, # of significant locations visited, max distance from home, distance travelling, time at home, and GPS amount recorded. A blank cell will be displayed on a given day if the data are 0 or were not collected for that category on that day. If the data are available, the greater the value is, the deeper color the cell will show. An example plot for one subject is shown below. 
 
 <p align="center"> 
-<img src="./example_plots/ExampleDataCollectionPlot.png">
+<img src="./Figures/ExampleDataCollectionPlot.png">
 </p>
 
 -` plot_data_quality()` 
@@ -581,7 +581,7 @@ Reads processed RDS data files accelerometer_bursts.rds, gps_bursts.rds, acceler
 Among the 9 plots, 4 are plotting **Number of Busts Per Day**, **Average Frequency Per Burst**, **Average Duration per Burst Over Time**, and **Average Duration Between Bursts Over Time** over **Unique Daily Measurements**. Points of each subject’s records are shown in a unique color. One example of Number of Busts Per Day over Unique Daily Measurements with 3 patients’ GPS data is shown below: 
 
 <p align="center"> 
-<img src="./example_plots/quality_unique_day_measurement.png" width="500">
+<img src="./Figures/quality_unique_day_measurement.png" width="500">
 </p>
 
 
@@ -589,7 +589,7 @@ Among the 9 plots, 4 are plotting **Number of Busts Per Day**, **Average Frequen
 For the other 5 plots, the x-axes are **Day**, and the y-axes are **Number of Bursts**, **Average Frequency Per Burst**, **Average Duration per Burst**, **Average Duration per Burst**, and **Overall Coverage**. One example of Number of Number of Busts Per Day over Day with 2 patients’ GPS data is shown below:
 
 <p align="center"> 
-<img src="./example_plots/quality_day.png" width="500">
+<img src="./Figures/quality_day.png" width="500">
 </p>
 
 -`plot_survey_responsiveness()` 
@@ -606,7 +606,7 @@ Generates 2 scatter plots to visualize weekly survey completion. For both plots,
 Takes minutes = acc_binsize (width of bin in minutes used for combining accelerometer data) as inputs, and generates individual plot of **Daily Accelerometer Data** for each patient. The x-axis for each plot is **Time of day** (in 24 hours format), and the y-axis is **Day** over the entire study period. 
 
 <p align="center"> 
-<img src="./example_plots/slat_plot.png" width="500">
+<img src="./Figures/slat_plot.png" width="500">
 </p>
 
 
