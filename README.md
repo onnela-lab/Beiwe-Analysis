@@ -46,9 +46,9 @@ This documentation will demonstrate how to run Beiwe data analysis code locally 
 
 ## Environment Setup
 
-Some of the Beiwe-Analysis code references **`Python`** or **`C`**-related code for speed, but most of this code is in **`R`**, so we suggest running the code in the **`Rstudio`**. If you already have **`Rstudio`** installed, we suggest updating it to the latest version.
+Some of the Beiwe-Analysis code references **`Python`** or **`C`**-related code for speed, but most of this code is in **`R`**, so we suggest running the code in **`Rstudio`**. If you already have **`Rstudio`** installed, we suggest updating it to the latest version.
 
-The following steps instruct how to install necessary packages including **Rcpp** that facilitate interfacing **`C`** code in R Packages. 
+The following steps explain how to install necessary packages including **Rcpp** which facilitates interfacing with **`C`** code in R Packages. 
 
 - **Rcpp requires gcc and gfortran installed**
     - **For macOS users**:
@@ -74,7 +74,7 @@ The following steps instruct how to install necessary packages including **Rcpp*
 - **Install/Load Required R Packages and Set Directories in Rstudio**
 
 
-    - Open **Rstudio** and run the following code to install/load all the R packages needed for the Beiwe-Analysis:
+    - Open **Rstudio** and run the following code to install/load all the R packages needed for Beiwe-Analysis:
         ```
         list.of.packages = c(
           "Rcpp",
@@ -128,8 +128,7 @@ function(patient_name, ...){
   ...
 ```
 
-survey preprocessing:
-in this preprocessing, we call each patient name by loop and read survey data from “specific survey filepath”. If there exists information in the survey file, we read the information by such order that: survey name, date, patient name, timestamp, etc. We store this information into several lists and that save then as RDS file.
+In survey preprocessing, we call each patient name by loop and read survey data from “specific survey filepath”. If data exists in the survey file, the data is read in this order: survey name, date, patient name, timestamp, etc. This information is stored in several lists and saved as RDS file.
 
 
 #### text_preprocessing
