@@ -9,7 +9,7 @@ This repository contains an evolving code base for running various types of anal
 This is being updated but you can [start here](https://github.com/onnela-lab/Beiwe-Analysis/wiki/Documentation). We will migrate documentation over to [Sphinx](http://www.sphinx-doc.org/en/master/), which is the most widely used documentation generator written and used by the Python community. 
 
 ## License
-This repository is published under the 3-clause BSD 3-clause, see [here](LICENSE).
+This repository is published under the 3-clause BSD 3-clause, see [here](LICENSE.md).
 
 ## Contribute
 We would love your contribution! To avoid fragmentation of the code base and maximize its usability, we have decided on the following guidelines:
