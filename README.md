@@ -3,7 +3,7 @@
 Beiwe data analysis code
 
 ## Description
-This repository contains an evolving code base for running various types of analyses on data collected with the Beiwe research platform for smartphone-based digital phenotyping. We will merge several distinct projects into this single repository by the end of 2018. Note that this repository is distinct from the Beiwe data anlaysis pipeline (see the back-end repo).
+This repository contains an evolving code base for running various types of analyses on data collected with the Beiwe research platform for smartphone-based digital phenotyping. We will merge several distinct projects into this single repository by the end of 2018. Note that this repository is distinct from the Beiwe data anlaysis pipeline. For documentation of Beiwe back-end, [start here](https://github.com/onnela-lab/beiwe-backend/wiki).
 
 ## Documentation
 This is being updated but you can [start here](https://github.com/onnela-lab/Beiwe-Analysis/wiki/Documentation). We will migrate documentation over to [Sphinx](http://www.sphinx-doc.org/en/master/), which is the most widely used documentation generator written and used by the Python community. 
