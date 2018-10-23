@@ -1,6 +1,10 @@
 ##Code to generate daily GPS summary metrics
 # Author: Harrison Reeder
 
+
+#' if you have never used these libraries before, be sure to install them using the following command for each, e.g.,
+#' install.packages("dplyr")
+
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -80,7 +84,7 @@ patient_ids <- list.dirs(input,full.names = F,recursive = F)
 # create an empty list object to store the output
 # this will become a list of lists, where each element is a patient, 
 # and for each patient there is a list of summary outputs.
-#results <- list()
+results <- list()
 
 #loop through each patient id in the data directory
 for(i in 1:length(patient_ids)){
