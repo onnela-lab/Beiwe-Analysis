@@ -1,0 +1,15 @@
+# Put any requirements for python 3 in this file
+
+# up-to-date as of 2017-12-13
+# Do NOT delete this requirement, or the code will not run, neither locally nor remotely.
+boto3==1.4.8
+
+# up-to-date as of 2018-01-15
+numpy==1.14.0
+
+# up-to-date as of 2018-01-15
+pandas==0.22.0
+
+# up-to-date as of 2017-12-13
+# Do NOT delete this requirement, or the code will not run, neither locally nor remotely.
+requests==2.18.4
