@@ -70,4 +70,5 @@ subprocess.call(["Rscript",
 
 # Zip up PROC_DATA_DIR and upload it to S3
 subprocess.check_call(["zip", "-r", PROC_ZIPPED_FILE_PATH, PROC_DATA_DIR])
-upload_to_s3(PROC_ZIPPED_FILE_PATH, PROC_ZIPPED_FILE_NAME, ["patientId"])
+upload_to_s3(PROC_ZIPPED_FILE_PATH, PROC_ZIPPED_FILE_NAME, ["patientId"], env_vars)
+print("Done!")
