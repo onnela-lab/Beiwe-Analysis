@@ -61,14 +61,20 @@ os.mkdir(PROC_DATA_DIR)
 download_raw_data(ZIPPED_DATA_FILE, env_vars)
 subprocess.check_call(["unzip", "-q", ZIPPED_DATA_FILE, "-d", RAW_DATA_DIR])
 
-# Run main.R (RScript) on RAW_DATA_DIR to generate statistical summaries
-subprocess.call(["Rscript",
-                 "--vanilla",
-                 os.path.join(BEIWE_ANALYSIS_DIR, "Summary", "main.R"),
-                 RAW_DATA_DIR,
-                 PROC_DATA_DIR])
-
-# Zip up PROC_DATA_DIR and upload it to S3
-subprocess.check_call(["zip", "-r", PROC_ZIPPED_FILE_PATH, PROC_DATA_DIR])
-upload_to_s3(PROC_ZIPPED_FILE_PATH, PROC_ZIPPED_FILE_NAME, ["patientId"], env_vars)
+# Iterate over all patients and run the summary generation Rscript on each patient
+for patient_id in os.listdir(RAW_DATA_DIR):
+    # Run main.R RScript on current patient_id
+    subprocess.call(["Rscript",
+                     "--vanilla",
+                     os.path.join(BEIWE_ANALYSIS_DIR, "Summary", "main.R"),
+                     patient_id,
+                     RAW_DATA_DIR,
+                     PROC_DATA_DIR])
+    summaries_base_dir = os.path.join(PROC_DATA_DIR, patient_id)
+    summary_types = ["gps", "text", "call", "powerstate"]
+    # accelerometer_summary_file_name = patient_id + "_accelerometer_summaries.csv"
+    for summary_type in summary_types:
+        tags = [patient_id, summary_type + "_summary"]
+        summary_file_name = "%s_%s_summary" % (patient_id, summary_type)
+        upload_to_s3(os.path.join(summaries_base_dir, summary_file_name), summary_file_name, tags, env_vars)
 print("Done!")
