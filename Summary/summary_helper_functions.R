@@ -1,11 +1,11 @@
 day = function(timestamp) strsplit(as.character(as.POSIXct(timestamp,tz="",origin="1970-01-01"))," ")[[1]][1]
 
-gps_summary = function(data_path, output_path, patient_id, timezone) {
+gps_summary = function(data_path, output_path, patient_id, timestamp_str, timezone) {
   # First, we look in the patient's "identifier" folder if it is available,
   # to store their device type. If that data isn't downloaded, we skip it.
 
   # Check if the patient has the "identifier" dataset downloaded
-  identifier_data_path = paste0(data_path, patient_id, "/identifiers/")
+  identifier_data_path = paste0(data_path, "/", patient_id, "/identifiers/")
   if(dir.exists(identifier_data_path)) {
     patient_identifier_files <- list.files(path=identifier_data_path, pattern="\\.csv$")
     identifier_file <- patient_identifier_files[1] # In the case the patient has multiple identifier data files, take the first one.
@@ -68,12 +68,12 @@ gps_summary = function(data_path, output_path, patient_id, timezone) {
                                                              AvgFlightDur_min,
                                                              StdFlightDur_min,
                                                              RoG_km)
-  write.csv(filtered_metric_summary, file=paste0(output_path, patient_id, "_gps_summaries.csv"))
+  write.csv(filtered_metric_summary, file=paste0(output_path, patient_id, "_gps_summaries_", timestamp_str, ".csv"))
 }
 
 
-text_summary = function(data_path, output_path, patient_id, timezone) {
-  text_data_path = paste0(data_path, patient_id, "/texts/")
+text_summary = function(data_path, output_path, patient_id, timestamp_str, timezone) {
+  text_data_path = paste0(data_path, "/", patient_id, "/texts/")
   if(dir.exists(text_data_path)) {
     textmat = c()
     text_files = list.files(path=text_data_path, pattern="\\.csv$")
@@ -141,13 +141,13 @@ text_summary = function(data_path, output_path, patient_id, timezone) {
 
     text_features = Reduce(inner_join, text_feature_list) # reduces each feature to days for which data is available.
     text_features = data.frame(text_features, stringsAsFactors=F)
-    write.csv(text_features, file=paste0(output_path, patient_id, "_text_summary.csv"))
+    write.csv(text_features, file=paste0(output_path, patient_id, "_text_summary_", timestamp_str, ".csv"))
   }
 }
 
 
-call_summary = function(data_path, output_path, patient_id, timezone) {
-  call_data_path = paste0(data_path, patient_id, "/calls/")
+call_summary = function(data_path, output_path, patient_id, timestamp_str, timezone) {
+  call_data_path = paste0(data_path, "/", patient_id, "/calls/")
   if(dir.exists(call_data_path)) {
     callmat = c()
     call_files = list.files(path=call_data_path, pattern="\\.csv$")
@@ -215,13 +215,13 @@ call_summary = function(data_path, output_path, patient_id, timezone) {
     call_features = Reduce(inner_join, call_feature_list) # reduces each feature to days for which data is available.
 
     call_features = data.frame(call_features,stringsAsFactors=F)
-    write.csv(call_features, file=paste0(output_path, patient_id, "_call_summary.csv"))
+    write.csv(call_features, file=paste0(output_path, patient_id, "_call_summary_", timestamp_str, ".csv"))
   }
 }
 
 
-powerstate_summary = function(data_path, output_path, patient_id, timezone) {
-  powerstate_data_path = paste0(data_path, patient_id, "/power_state/")
+powerstate_summary = function(data_path, output_path, patient_id, timestamp_str, timezone) {
+  powerstate_data_path = paste0(data_path, "/", patient_id, "/power_state/")
   if(dir.exists(powerstate_data_path)) {
     statemat = c()
     state_files = list.files(path=powerstate_data_path, pattern="\\.csv$")
@@ -255,13 +255,13 @@ powerstate_summary = function(data_path, output_path, patient_id, timezone) {
     #power_state_list = list(total_screen_events, total_unlock_events, total_power_events)
     #power_state_features = Reduce(inner_join, power_state_list) # reduces each feature to days for which data is available.
     power_state_features = merge(total_screen_events, total_power_events, by="day", all=T)
-    write.csv(power_state_features, file=paste0(output_path, patient_id, "_powerstate_summary.csv"))
+    write.csv(power_state_features, file=paste0(output_path, patient_id, "_powerstate_summary_", timestamp_str, ".csv"))
   }
 }
 
 
-accelerometer_summary = function(data_path, output_path, patient_id, timezone) {
-  accelerometer_data_path = paste0(data_path, patient_id, "/accelerometer/")
+accelerometer_summary = function(data_path, output_path, patient_id, timestamp_str, timezone) {
+  accelerometer_data_path = paste0(data_path, "/", patient_id, "/accelerometer/")
   if(dir.exists(accelerometer_data_path)) {
     accmat = c()
     acc_files = list.files(path=accelerometer_data_path, pattern="\\.csv$")
@@ -273,6 +273,6 @@ accelerometer_summary = function(data_path, output_path, patient_id, timezone) {
     accmat_f = accmat
     accmat_f[,"day"] = sapply(accmat[,"timestamp"], day)
 
-    write.csv(accmat_f, file=paste0(output_path, patient_id, "_accelerometer_summary.csv"))
+    write.csv(accmat_f, file=paste0(output_path, patient_id, "_accelerometer_summary_", timestamp_str, ".csv"))
   }
 }

@@ -8,7 +8,8 @@ This pipeline script does:
     3) Upload summaries to (destination) S3 Bucket
 
 Setup:
-Beiwe-Analysis repo needs to exist in the user's home directory
+Beiwe-Analysis repo needs to exist in the user's home directory. This file is located at
+    /home/Beiwe-Analysis/Pipeline/custom_pipeline.py
 
 Environment variables:
     FREQ: (REQUIRED)  Frequency of running the pipeline (used to retrieve beiwe download creds from AWS SSM)
@@ -22,7 +23,7 @@ Environment variables:
 from datetime import datetime
 import os
 import subprocess
-from .custom_utils import upload_to_s3, download_raw_data
+from custom_utils import upload_to_s3, download_raw_data
 
 
 # # Here's example code for how to only run this code on studies with certain IDs:
@@ -46,6 +47,7 @@ env_vars = {
 # Globals
 now = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')
 BEIWE_ANALYSIS_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+os.environ["BEIWE_ANALYSIS_PROJECT_PATH"] = BEIWE_ANALYSIS_DIR
 HOME = os.path.dirname(BEIWE_ANALYSIS_DIR)  # User's home directory
 RAW_DATA_DIR = os.path.join(HOME, "raw-data-{}".format(now))  # Where raw data is saved
 PROC_DATA_DIR = os.path.join(HOME, 'processed-data-{}'.format(now))  # Where summaries are saved
@@ -72,9 +74,10 @@ for patient_id in os.listdir(RAW_DATA_DIR):
                      PROC_DATA_DIR])
     summaries_base_dir = os.path.join(PROC_DATA_DIR, patient_id)
     summary_types = ["gps", "text", "call", "powerstate"]
-    # accelerometer_summary_file_name = patient_id + "_accelerometer_summaries.csv"
     for summary_type in summary_types:
         tags = [patient_id, summary_type + "_summary"]
-        summary_file_name = "%s_%s_summary" % (patient_id, summary_type)
-        upload_to_s3(os.path.join(summaries_base_dir, summary_file_name), summary_file_name, tags, env_vars)
+        summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, now)
+        summary_file_path = os.path.join(summaries_base_dir, summary_file_name)
+        if os.path.isfile(summary_file_path):
+            upload_to_s3(summary_file_path, summary_file_name, tags, env_vars)
 print("Done!")

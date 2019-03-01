@@ -1,5 +1,5 @@
 ## Main.R
-## Usage: Rscript main.R patient_id data_root_dir output_root_dir
+## Usage: Rscript main.R patient_id data_root_dir output_root_dir timestamp_str
 
 #install.packages("dplyr")
 #install.packages("tidyr")
@@ -33,16 +33,19 @@ if (length(args) != 3) {
 patient_id = args[1]
 data_filepath = args[2]
 output_filepath = args[3]
+timestamp_str = args[4]
 
 # Global variables
 timezone = "America/New_York"
-#SIDs <- list.dirs(data_filepath, full.names = F, recursive = F)
+
+# Get Beiwe_Analysis directory path
+BA_PATH <- Sys.getenv("BEIWE_ANALYSIS_PROJECT_PATH")
 
 # Import helper functions
-source("GPS_preprocessing.R")
-source("gps_imputation.R")
-source("gps_survey_communication_dailyfeatures.R")
-source("summary_helper_functions.R")
+source(paste0(BA_PATH, "/Summary/GPS_preprocessing.R"))
+source(paste0(BA_PATH, "/Summary/gps_imputation.R"))
+source(paste0(BA_PATH, "/Summary/gps_survey_communication_dailyfeatures.R"))
+source(paste0(BA_PATH, "/Summary/summary_helper_functions.R"))
 
 # Data Processing
 print(paste0("Subject: ", patient_id))
@@ -50,25 +53,16 @@ print(Sys.time())
 
 # Create output directories
 dir.create(file.path(output_filepath, patient_id), showWarnings = FALSE)
-patient_output_path = paste0(output_filepath, patient_id, "/")
+patient_output_path = paste0(output_filepath, "/", patient_id, "/")
 
 # Generate GPS Summary
-gps_summary(data_filepath, patient_output_path, patient_id, timezone)
-#print(paste(SIDs[i], "GPS Summary successfully generated!", sep=" "))
+try(gps_summary(data_filepath, patient_output_path, patient_id, timestamp_str, timezone), silent=T)
 
 # Generate Texts summary
-text_summary(data_filepath, patient_output_path, patient_id, timezone)
-#print(paste(SIDs[i], "Text Summary successfully generated!", sep=" "))
+text_summary(data_filepath, patient_output_path, patient_id, timestamp_str, timezone)
 
 # Generate Calls summary
-call_summary(data_filepath, patient_output_path, patient_id, timezone)
-#print(paste(SIDs[i], "Call Summary successfully generated!", sep=" "))
+call_summary(data_filepath, patient_output_path, patient_id, timestamp_str, timezone)
 
 # Generate Power state summary
-powerstate_summary(data_filepath, patient_output_path, patient_id, timezone)
-#print(paste(SIDs[i], "Power State Summary successfully generated!", sep=" "))
-
-# Generate Accelerometer summary
-#accelerometer_summary(data_filepath, patient_output_path, SIDs[[i]], timezone)
-#print(paste(SIDs[i], "Accelerometer Summary successfully generated!", sep=" "))
-
+powerstate_summary(data_filepath, patient_output_path, patient_id, timestamp_str, timezone)
