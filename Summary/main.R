@@ -13,21 +13,21 @@
 #install.packages("rcompanion")
 
 # Required libraries
-library(dplyr)
-library(purrr)
-library(lubridate)
-library(tidyr)
-library(ggplot2)
-library(MASS)
-library(RcppRoll)
-library(zoo)
-library(stringr)
-library(ggpubr)
-library(rcompanion)
+suppressMessages(library(dplyr))
+suppressMessages(library(purrr))
+suppressMessages(library(lubridate))
+suppressMessages(library(tidyr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(MASS))
+suppressMessages(library(RcppRoll))
+suppressMessages(library(zoo))
+suppressMessages(library(stringr))
+suppressMessages(library(ggpubr))
+suppressMessages(library(rcompanion))
 
 # Handling command line arguements
 args = commandArgs(trailingOnly=TRUE)
-if (length(args) != 3) {
+if (length(args) != 4) {
   stop("ERROR: missing arguments", call.=FALSE)
 }
 patient_id = args[1]

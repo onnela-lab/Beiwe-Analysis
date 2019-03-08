@@ -45,14 +45,14 @@ env_vars = {
 }
 
 # Globals
-now = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')
+NOW = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')
 BEIWE_ANALYSIS_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 os.environ["BEIWE_ANALYSIS_PROJECT_PATH"] = BEIWE_ANALYSIS_DIR
 HOME = os.path.dirname(BEIWE_ANALYSIS_DIR)  # User's home directory
-RAW_DATA_DIR = os.path.join(HOME, "raw-data-{}".format(now))  # Where raw data is saved
-PROC_DATA_DIR = os.path.join(HOME, 'processed-data-{}'.format(now))  # Where summaries are saved
+RAW_DATA_DIR = os.path.join(HOME, "raw-data-{}".format(NOW))  # Where raw data is saved
+PROC_DATA_DIR = os.path.join(HOME, 'processed-data-{}'.format(NOW))  # Where summaries are saved
 ZIPPED_DATA_FILE = os.path.join(RAW_DATA_DIR, "raw_data.zip")
-PROC_ZIPPED_FILE_NAME = "processed-data-{}.zip".format(now)
+PROC_ZIPPED_FILE_NAME = "processed-data-{}.zip".format(NOW)
 PROC_ZIPPED_FILE_PATH = os.path.join(HOME, PROC_ZIPPED_FILE_NAME)
 
 # Create data directories
@@ -71,12 +71,13 @@ for patient_id in os.listdir(RAW_DATA_DIR):
                      os.path.join(BEIWE_ANALYSIS_DIR, "Summary", "main.R"),
                      patient_id,
                      RAW_DATA_DIR,
-                     PROC_DATA_DIR])
+                     PROC_DATA_DIR,
+                     NOW])
     summaries_base_dir = os.path.join(PROC_DATA_DIR, patient_id)
     summary_types = ["gps", "text", "call", "powerstate"]
     for summary_type in summary_types:
         tags = [patient_id, summary_type + "_summary"]
-        summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, now)
+        summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, NOW)
         summary_file_path = os.path.join(summaries_base_dir, summary_file_name)
         if os.path.isfile(summary_file_path):
             upload_to_s3(summary_file_path, summary_file_name, tags, env_vars)
