@@ -1,18 +1,25 @@
 ## Main.R
 ## Usage: Rscript main.R patient_id data_root_dir output_root_dir timestamp_str
 
-#install.packages("dplyr")
-#install.packages("tidyr")
-#install.packages("ggplot2")
-#install.packages("MASS")
-#install.packages("RcppRoll")
-#install.packages("zoo")
-#install.packages("lubridate")
-#install.packages("stringr")
-#install.packages("ggpubr")
-#install.packages("rcompanion")
+# Suppress all warnings while running.  Note: This line should be commented out when debugging/development
+options(warn=-1)
 
-# Required libraries
+# Required packages for this code to run
+required_packages <- c("dplyr", "tidyr", "ggplot2", "MASS", "RcppRoll", "zoo", "lubridate", "stringr", "ggpubr", "rcompanion")
+
+# This function is used to check whether a package is installed
+is_installed <- function(pkg) {
+  is.element(pkg, installed.packages()[,1])
+}
+
+# Install required libraries if not installed
+for(p in required_packages) {
+  if (!is_installed(p)) {
+    install.packages(p)
+  }
+}
+
+# Import required libraries
 suppressMessages(library(dplyr))
 suppressMessages(library(purrr))
 suppressMessages(library(lubridate))
