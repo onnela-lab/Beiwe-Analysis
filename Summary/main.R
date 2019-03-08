@@ -15,7 +15,7 @@ is_installed <- function(pkg) {
 # Install required libraries if not installed
 for(p in required_packages) {
   if (!is_installed(p)) {
-    install.packages(p)
+    install.packages(p, repos="https://cran.us.r-project.org")
   }
 }
 
