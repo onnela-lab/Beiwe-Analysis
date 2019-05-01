@@ -1,6 +1,43 @@
 import json
 import boto3
 import requests
+import csv
+
+
+def upload_to_backend(local_file_path, data_type, env_vars):
+    """
+    Uploads passed csv file to backend in JSON format
+    :param local_file_path: path to the local csv file
+    :param data_type: type of summary
+    :param env_vars: a dictionary of env variables
+    """
+    csv_titles = {
+        "gps": ["id"],
+        "accelerometer": ["id"],
+        "call": ["id", "day", "outgoing_calls", "outgoing_calllengths", "call_outdegree", "incoming_calls", "incoming_calllengths", "call_indegree", "reciprocity", "responsiveness"],
+        "text": ["id", "day", "outgoing_texts", "outgoing_textlengths", "text_outdegree", "incoming_texts", "incoming_textlengths", "text_indegree", "reciprocity", "responsiveness"],
+        "powerstate": ["id", "day", "total_screen_events", "total_power_events"],
+    }
+    access_key, secret_key = _get_beiwe_credentials(env_vars.get("region_name"),
+                                                    env_vars.get("access_key_ssm_name"),
+                                                    env_vars.get("secret_key_ssm_name"))
+    json_upload_url = '{}/pipeline-json-upload/v1'.format(env_vars.get("server_url"))
+    payload = {
+        'access_key': access_key,
+        'secret_key': secret_key,
+        'study_id': env_vars.get("study_object_id"),
+        'data_type': data_type,
+    }
+
+    with open(local_file_path, 'rU') as local_file:
+        reader = csv.DictReader(local_file, fieldnames=csv_titles[data_type])
+        output = json.dumps([line for line in reader])
+        payload["summary_output"] = output
+
+    resp = requests.post(json_upload_url, data=payload)
+
+    # Raise an HTTP error if one occurred
+    resp.raise_for_status()
 
 
 def upload_to_s3(local_file_path, remote_file_path, tags_list, env_vars):

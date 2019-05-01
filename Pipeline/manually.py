@@ -23,7 +23,7 @@ Environment variables:
 from datetime import datetime
 import os
 import subprocess
-from custom_utils import upload_to_s3, download_raw_data
+from custom_utils import upload_to_s3, download_raw_data, upload_to_backend
 
 
 # # Here's example code for how to only run this code on studies with certain IDs:
@@ -80,5 +80,6 @@ for patient_id in os.listdir(RAW_DATA_DIR):
         summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, NOW)
         summary_file_path = os.path.join(summaries_base_dir, summary_file_name)
         if os.path.isfile(summary_file_path):
-            upload_to_s3(summary_file_path, summary_file_name, tags, env_vars)
+            # upload_to_s3(summary_file_path, summary_file_name, tags, env_vars)
+            upload_to_backend(summary_file_path, summary_type, env_vars)
 print("Done!")
