@@ -23,7 +23,7 @@ Environment variables:
 from datetime import datetime
 import os
 import subprocess
-from custom_utils import upload_to_s3, download_raw_data, upload_to_backend
+from .custom_utils import upload_to_s3, download_raw_data, upload_to_backend
 
 
 # # Here's example code for how to only run this code on studies with certain IDs:
@@ -45,7 +45,7 @@ env_vars = {
 }
 
 # Globals
-NOW = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')
+NOW = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')  # case change on NOW
 BEIWE_ANALYSIS_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 os.environ["BEIWE_ANALYSIS_PROJECT_PATH"] = BEIWE_ANALYSIS_DIR
 HOME = os.path.dirname(BEIWE_ANALYSIS_DIR)  # User's home directory
@@ -63,23 +63,31 @@ os.mkdir(PROC_DATA_DIR)
 download_raw_data(ZIPPED_DATA_FILE, env_vars)
 subprocess.check_call(["unzip", "-q", ZIPPED_DATA_FILE, "-d", RAW_DATA_DIR])
 
+
 # Iterate over all patients and run the summary generation Rscript on each patient
 for patient_id in os.listdir(RAW_DATA_DIR):
+
     # Run main.R RScript on current patient_id
-    subprocess.call(["Rscript",
-                     "--vanilla",
-                     os.path.join(BEIWE_ANALYSIS_DIR, "Summary", "main.R"),
-                     patient_id,
-                     RAW_DATA_DIR,
-                     PROC_DATA_DIR,
-                     NOW])
+    subprocess.call(
+        [
+            "Rscript",
+            "--vanilla",
+            os.path.join(BEIWE_ANALYSIS_DIR, "Summary", "main.R"),
+            patient_id,
+            RAW_DATA_DIR,
+            PROC_DATA_DIR,
+            NOW,  # added this timestamp
+        ]
+    )
+
     summaries_base_dir = os.path.join(PROC_DATA_DIR, patient_id)
     summary_types = ["gps", "text", "call", "powerstate"]
     for summary_type in summary_types:
-        tags = [patient_id, summary_type + "_summary"]
+        # tags = [patient_id, summary_type + "_summary"]
         summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, NOW)
         summary_file_path = os.path.join(summaries_base_dir, summary_file_name)
         if os.path.isfile(summary_file_path):
             # upload_to_s3(summary_file_path, summary_file_name, tags, env_vars)
+            # and then upload to backend
             upload_to_backend(summary_file_path, summary_type, env_vars)
 print("Done!")
