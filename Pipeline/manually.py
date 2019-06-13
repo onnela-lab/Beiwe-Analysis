@@ -19,12 +19,18 @@ Environment variables:
     region_name: (REQUIRED) Region of AWS SSM service
     server_url: (REQUIRED) Beiwe backend server URL
 """
+# (unclear whether this runs under python 2 or 3)
+from __future__ import print_function
 
 from datetime import datetime
 import os
 import subprocess
-from .custom_utils import upload_to_s3, download_raw_data, upload_to_backend
 
+# This is purely present to make IDEs comprehend the codebase correctly
+try:
+    from custom_utils import upload_to_s3, download_raw_data, upload_to_backend
+except ImportError:
+    from .custom_utils import upload_to_s3, download_raw_data, upload_to_backend
 
 # # Here's example code for how to only run this code on studies with certain IDs:
 # studies_to_run_script_on = ['584b042c2dd65714f0a8c3f4',
