@@ -95,5 +95,5 @@ for patient_id in os.listdir(RAW_DATA_DIR):
         if os.path.isfile(summary_file_path):
             # upload_to_s3(summary_file_path, summary_file_name, tags, env_vars)
             # and then upload to backend
-            upload_to_backend(summary_file_path, summary_type, env_vars)
+            upload_to_backend(summary_file_path, summary_type, env_vars, patient_id)
 print("Done!")
