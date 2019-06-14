@@ -106,8 +106,12 @@ def download_raw_data(local_file, env_vars):
     access_key, secret_key = _get_beiwe_credentials(env_vars.get("region_name"),
                                                     env_vars.get("access_key_ssm_name"),
                                                     env_vars.get("secret_key_ssm_name"))
+    # handle case where http/https not provided
+    server_url = env_vars.get("server_url")
+    if not server_url.startswith("http"):
+        server_url = "https://" + server_url
 
-    data_access_api_url = '{}/get-data/v1'.format(env_vars.get("server_url"))
+    data_access_api_url = '{}/get-data/v1'.format(server_url)
     payload = {
         'access_key': access_key,
         'secret_key': secret_key,
