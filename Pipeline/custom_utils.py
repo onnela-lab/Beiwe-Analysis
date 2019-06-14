@@ -41,7 +41,12 @@ def upload_to_backend(local_file_path, data_type, env_vars, patient_id):
         env_vars.get("secret_key_ssm_name")
     )
 
-    json_upload_url = '{}/pipeline-json-upload/v1'.format(env_vars.get("server_url"))
+    # handle case where http/https not provided
+    server_url = env_vars.get("server_url")
+    if not server_url.startswith("http"):
+        server_url = "https://" + server_url
+
+    json_upload_url = '{}/pipeline-json-upload/v1'.format(server_url)
 
     payload = {
         'access_key': access_key,
