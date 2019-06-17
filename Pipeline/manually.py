@@ -87,6 +87,12 @@ for patient_id in os.listdir(RAW_DATA_DIR):
     )
 
     summaries_base_dir = os.path.join(PROC_DATA_DIR, patient_id)
+
+
+    text = subprocess.check_output("ls -Al %s" % summaries_base_dir,
+                            shell=True)
+    print(text)
+
     summary_types = ["gps", "text", "call", "powerstate"]
     for summary_type in summary_types:
         # tags = [patient_id, summary_type + "_summary"]
