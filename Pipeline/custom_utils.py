@@ -52,7 +52,7 @@ def upload_to_backend(local_file_path, data_type, env_vars, patient_id):
         'access_key': access_key,
         'secret_key': secret_key,
         'study_id': env_vars.get("study_object_id"),
-        'data_type': data_type,
+        'summary_type': data_type,
         "patient_id": patient_id,
     }
 
