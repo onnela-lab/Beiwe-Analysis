@@ -1,5 +1,9 @@
+from __future__ import print_function
+
 import csv
 import json
+from datetime import datetime
+from time import sleep
 
 import boto3
 import requests
@@ -28,7 +32,7 @@ CSV_METADATA = {
 }
 
 
-def upload_to_backend(local_file_path, data_type, env_vars, patient_id):
+def upload_to_backend(local_file_path, file_name, env_vars, patient_id):
     """
     Uploads passed csv file to backend in JSON format
     :param local_file_path: path to the local csv file
@@ -52,12 +56,13 @@ def upload_to_backend(local_file_path, data_type, env_vars, patient_id):
         'access_key': access_key,
         'secret_key': secret_key,
         'study_id': env_vars.get("study_object_id"),
-        'summary_type': data_type,
+        'file_name': file_name,
         "patient_id": patient_id,
     }
 
     with open(local_file_path, 'rU') as local_file:
-        reader = csv.DictReader(local_file, fieldnames=CSV_METADATA[data_type])
+        reader = csv.DictReader(local_file)
+        # reader.fieldnames
         payload["summary_output"] = json.dumps([line for line in reader])
 
     resp = requests.post(json_upload_url, data=payload)
@@ -123,11 +128,14 @@ def download_raw_data(local_file, env_vars):
         'study_id': env_vars.get("study_object_id"),
         'web_form': 'true'  # Include this because it makes the backend return a zip file
     }
-    # TODO do this as a generator, if simple
+
     resp = requests.post(data_access_api_url, data=payload)
-    byte_stream = resp.content
+    if resp.status_code > 399:
+        print(resp.status_code)
+        raise Exception(resp.status_code)
     with open(local_file, 'xb') as fn:
-        fn.write(byte_stream)
+        fn.write(resp.content)
+
 
 
 # Helper functions

@@ -21,13 +21,16 @@ Environment variables:
 """
 # (unclear whether this runs under python 2 or 3)
 from __future__ import print_function
-
+from pprint import pprint
 from datetime import datetime
 import os
 import subprocess
+from zipfile import ZipFile
 
-# This is purely present to make IDEs comprehend the codebase correctly
+from subprocess import CalledProcessError
+
 try:
+    # This is purely present to make IDEs comprehend the codebase correctly
     from custom_utils import upload_to_s3, download_raw_data, upload_to_backend
 except ImportError:
     from .custom_utils import upload_to_s3, download_raw_data, upload_to_backend
@@ -51,7 +54,9 @@ env_vars = {
 }
 
 # Globals
-NOW = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')  # case change on NOW
+NOW = datetime.now().strftime('%Y-%m-%d %H-%M-%S-%f')
+
+# Folders
 BEIWE_ANALYSIS_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 os.environ["BEIWE_ANALYSIS_PROJECT_PATH"] = BEIWE_ANALYSIS_DIR
 HOME = os.path.dirname(BEIWE_ANALYSIS_DIR)  # User's home directory
@@ -67,17 +72,41 @@ os.mkdir(PROC_DATA_DIR)
 
 # Download raw data and unzip it inside RAW_DATA_DIR
 download_raw_data(ZIPPED_DATA_FILE, env_vars)
-subprocess.check_call(["unzip", "-q", ZIPPED_DATA_FILE, "-d", RAW_DATA_DIR])
 
+# Using python's zipfile seems to have fewer error cases.
+
+with ZipFile(ZIPPED_DATA_FILE, 'r') as zipObj:
+    zipObj.extractall(path=RAW_DATA_DIR)
+
+# Using unzip from the command line may result in better memory usage as it is a separate process entirely
+# try:
+#     unzip = subprocess.check_output(["unzip", "-q", ZIPPED_DATA_FILE, "-d", RAW_DATA_DIR]).decode()
+#     print("unzip:", unzip)
+# except CalledProcessError as e:
+#     # a 1 return code means warnings, but finished successfully.
+#     print("unzip error:")
+#     print(vars(e))
+#     print()
+#     if e.returncode == 1:
+#         pass
+#     else:
+#         text = subprocess.check_output("ls -Al %s" % ZIPPED_DATA_FILE, shell=True).decode()
+#         print("ZIPPED_DATA_FILE:", text)
+#
+#         # the return code of 9 error means the file is not a zip file:
+#         with open(ZIPPED_DATA_FILE, "r") as f:
+#             print("first 200 chars of file")
+#             print(f.read()[:200])
+#         raise
 
 # Iterate over all patients and run the summary generation Rscript on each patient
 for patient_id in os.listdir(RAW_DATA_DIR):
-
     # Run main.R RScript on current patient_id
     subprocess.call(
         [
             "Rscript",
             "--vanilla",
+            "--verbose",
             os.path.join(BEIWE_ANALYSIS_DIR, "Summary", "main.R"),
             patient_id,
             RAW_DATA_DIR,
@@ -87,19 +116,16 @@ for patient_id in os.listdir(RAW_DATA_DIR):
     )
 
     summaries_base_dir = os.path.join(PROC_DATA_DIR, patient_id)
+    summary_files = os.listdir(summaries_base_dir)
 
+    print("These files exist after running R for patient %s at %s" % (patient_id, NOW))
+    print(" || ".join(summary_files))
 
-    text = subprocess.check_output("ls -Al %s" % summaries_base_dir,
-                            shell=True)
-    print(text)
-
-    summary_types = ["gps", "text", "call", "powerstate"]
-    for summary_type in summary_types:
-        # tags = [patient_id, summary_type + "_summary"]
-        summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, NOW)
-        summary_file_path = os.path.join(summaries_base_dir, summary_file_name)
+    files_uploaded = []
+    # for summary_type in ("gps", "text", "call", "powerstate"):
+    for file_name in summary_files:
+        # summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, NOW)
+        summary_file_path = os.path.join(summaries_base_dir, file_name)
         if os.path.isfile(summary_file_path):
-            # upload_to_s3(summary_file_path, summary_file_name, tags, env_vars)
-            # and then upload to backend
-            upload_to_backend(summary_file_path, summary_type, env_vars, patient_id)
+            upload_to_backend(summary_file_path, file_name, env_vars, patient_id)
 print("Done!")
