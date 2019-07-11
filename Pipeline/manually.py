@@ -122,9 +122,7 @@ for patient_id in os.listdir(RAW_DATA_DIR):
     print(" || ".join(summary_files))
 
     files_uploaded = []
-    # for summary_type in ("gps", "text", "call", "powerstate"):
     for file_name in summary_files:
-        # summary_file_name = "%s_%s_summary_%s.csv" % (patient_id, summary_type, NOW)
         summary_file_path = os.path.join(summaries_base_dir, file_name)
         if os.path.isfile(summary_file_path):
             upload_to_backend(summary_file_path, file_name, env_vars, patient_id)
