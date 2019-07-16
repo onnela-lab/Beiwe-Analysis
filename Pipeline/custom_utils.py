@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import os
 import csv
 import json
 from datetime import datetime
@@ -30,6 +31,29 @@ CSV_METADATA = {
     "text": COLUMNS_CALL_TEXT,
     "powerstate": COLUMNS_POWERSTATE,
 }
+
+
+DATA_TYPES_TO_DOWNLOAD = [
+    # "accelerometer",  # the analysis code doesn't work and the data stream is too big.
+    # "bluetooth",
+    "calls",
+    "gps",
+    # "identifiers",
+    # "app_log",
+    "ios_log",
+    "power_state",
+    # "survey_answers",
+    # "survey_timings",
+    "texts",
+    # "audio_recordings",
+    # "image_survey",
+    "wifi",
+    "proximity",
+    "gyro",
+    "magnetometer",
+    "devicemotion",
+    "reachability",
+]
 
 
 def upload_to_backend(local_file_path, file_name, env_vars, patient_id):
@@ -122,11 +146,23 @@ def download_raw_data(local_file, env_vars):
         server_url = "https://" + server_url
 
     data_access_api_url = '{}/get-data/v1'.format(server_url)
+
+    # blow up if no patient id provided (we do not want to attempt processing all data from a study
+    # in one go.  Takes forever and uses too much memory.)
+    patient_id = os.environ.get("patient_id")
+    if not patient_id:
+        print("no patient id was provided.")
+        raise Exception("no patient id was provided.")
+    else:
+        print("processing data for", patient_id)
+
     payload = {
         'access_key': access_key,
         'secret_key': secret_key,
         'study_id': env_vars.get("study_object_id"),
-        'web_form': 'true'  # Include this because it makes the backend return a zip file
+        "user_ids": [patient_id],
+        "data_types": DATA_TYPES_TO_DOWNLOAD,
+        'web_form': 'true',  # Include this because it makes the backend return a zip file
     }
 
     resp = requests.post(data_access_api_url, data=payload)

@@ -44,6 +44,9 @@ except ImportError:
 # if study_object_id not in studies_to_run_script_on:
 #     exit(0)
 
+from pprint import pprint
+pprint(os.environ)
+
 # Load environment variables
 env_vars = {
     "access_key_ssm_name": "{}-{}".format(os.environ["access_key_ssm_name"], os.environ["FREQ"]),
@@ -73,8 +76,8 @@ os.mkdir(PROC_DATA_DIR)
 # Download raw data and unzip it inside RAW_DATA_DIR
 download_raw_data(ZIPPED_DATA_FILE, env_vars)
 
-# Using python's zipfile seems to have fewer error cases.
-
+# Using python's zipfile seems to have fewer error cases, probably because it is this part of the
+# python std library that creates the zip in the first place.  Memory use may be higher.
 with ZipFile(ZIPPED_DATA_FILE, 'r') as zipObj:
     zipObj.extractall(path=RAW_DATA_DIR)
 
