@@ -1,10 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 export PATH="$(pwd):$PATH"
+pwd
+ls -alh
 cd Beiwe-Analysis
-git pull
-git status
+git fetch
+git reset --hard origin/pipeline
 
-echo "starting..."
-cd ..
-
-python3 Beiwe-Analysis/Pipeline/${FREQ}.py
+bash Pipeline/utils/post-git.sh
