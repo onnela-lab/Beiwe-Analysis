@@ -80,6 +80,7 @@ download_raw_data(ZIPPED_DATA_FILE, env_vars)
 # python std library that creates the zip in the first place.  Memory use may be higher.
 with ZipFile(ZIPPED_DATA_FILE, 'r') as zipObj:
     zipObj.extractall(path=RAW_DATA_DIR)
+os.remove(ZIPPED_DATA_FILE)
 
 # Using unzip from the command line may result in better memory usage as it is a separate process entirely
 # try:
