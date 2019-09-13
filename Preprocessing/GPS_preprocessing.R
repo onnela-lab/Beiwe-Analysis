@@ -142,7 +142,7 @@ GPS2MobMat = function(filelist,itrvl=10,accuracylim=51,r=NULL,w=NULL,tint_m=NULL
   }
   outmat = do.call(rbind,outmat_ls)
   if(curind<=nrow(avgmat)){  
-    outmat=rbind(outmat,ExtractFlights(avgmat[curind:nrow(avgmat),c(4,3,2)],r,w))
+    outmat=rbind(outmat,ExtractFlights(avgmat[curind:nrow(avgmat),c(5,6,2)],r,w))
   }
   rownames(outmat)=NULL
   colnames(outmat)=c("Code","x0","y0","t0","x1","y1","t1")
