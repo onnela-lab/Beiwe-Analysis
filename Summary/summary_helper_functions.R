@@ -68,6 +68,7 @@ gps_summary = function(data_path, output_path, patient_id, timestamp_str, timezo
                                                              AvgFlightDur_min,
                                                              StdFlightDur_min,
                                                              RoG_km)
+  filtered_metric_summary$date = rownames(results$featavg)
   write.csv(filtered_metric_summary, file=paste0(output_path, patient_id, "_gps_summaries_", timestamp_str, ".csv"))
 }
 
